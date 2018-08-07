@@ -5,6 +5,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -15,6 +16,7 @@ public class MainMenuActivity extends AppCompatActivity {
     private Button b2;
     private MediaPlayer mediaPlayer;
     public static final int ABC=222;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,7 +34,7 @@ public class MainMenuActivity extends AppCompatActivity {
         b2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                Intent i = new Intent(Intent.ACTION_PICK);
 
                 i.setType("*/*");
                 startActivityForResult(i, ABC);
@@ -43,16 +45,29 @@ public class MainMenuActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        if ((requestCode==ABC) && (resultCode == RESULT_OK ))
+        if ((requestCode==ABC) && (resultCode == RESULT_OK ) && (data!=null))
         {
             Uri myFile = data.getData();
-            mediaPlayer=MediaPlayer.create(this, myFile);
-            try {
-                mediaPlayer.prepare();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            mediaPlayer.start();
+
+            mediaPlayer=MediaPlayer.create(this,myFile);
+            mplayergo(myFile);
+
+
+
+
         }
     }
+    public void mplayergo (Uri sound)
+    {
+        try {
+            mediaPlayer.stop();
+            mediaPlayer.reset();
+            mediaPlayer.release();
+            mediaPlayer = MediaPlayer.create(this, sound);
+             mediaPlayer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
