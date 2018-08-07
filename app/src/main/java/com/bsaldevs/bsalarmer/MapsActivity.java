@@ -1,6 +1,5 @@
 package com.bsaldevs.bsalarmer;
 
-import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -40,10 +39,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+
         // Add a marker in Sydney and move the camera
-        LatLng station = new LatLng(0, 0);
-        mMap.addMarker(new MarkerOptions().position(station).title("Your station")).setDraggable(true);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(station));
+        LatLng sydney = new LatLng(-34, 151);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
     @Override
@@ -57,8 +57,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         return super.onKeyDown(keyCode, event);
     }
-
-
     @Override
     public void onBackPressed() {
         Log.d("CDA", "onBackPressed Called");

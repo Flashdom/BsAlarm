@@ -14,7 +14,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        selectStation = findViewById(R.id.button_select_station);
+
+        selectStation = findViewById(R.id.select_station);
     }
 
     public void openMapActivity(View view) {
