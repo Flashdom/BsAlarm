@@ -4,6 +4,7 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -42,7 +43,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mMap.addMarker(new MarkerOptions()
+                .position(sydney)
+                .title("Marker in Sydney"))
+                    .setDraggable(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
@@ -61,5 +65,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onBackPressed() {
         Log.d("CDA", "onBackPressed Called");
         super.onBackPressed();
+    }
+
+    public void addButtonAction(View view) {
+        addPointToMap(new LatLng(0, 0));
+    }
+
+    public void addPointToMap(LatLng position) {
+        Log.d("mapLog", "new point added to map: " + mMap + ", position: " + position);
+        mMap.addMarker(new MarkerOptions().
+                position(position)
+                .title("mark"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
     }
 }
