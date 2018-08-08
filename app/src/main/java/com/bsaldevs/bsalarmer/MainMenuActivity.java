@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import java.io.IOException;
 
@@ -16,12 +17,17 @@ public class MainMenuActivity extends AppCompatActivity {
     private Button b2;
     private MediaPlayer mediaPlayer;
     public static final int ABC=222;
+    TextView tv1;
+    MyLocation myLocation = new MyLocation();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+        tv1=findViewById(R.id.textView);
         b1=findViewById(R.id.button);
+
         b1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -41,6 +47,8 @@ public class MainMenuActivity extends AppCompatActivity {
             }
         });
 
+
+
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -48,7 +56,7 @@ public class MainMenuActivity extends AppCompatActivity {
         if ((requestCode==ABC) && (resultCode == RESULT_OK ) && (data!=null))
         {
             Uri myFile = data.getData();
-
+            tv1.setText(String.valueOf(myLocation.getX())+ " " + String.valueOf(myLocation.getY()));
             mediaPlayer=MediaPlayer.create(this,myFile);
             mplayergo(myFile);
 
