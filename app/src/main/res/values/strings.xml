@@ -3,4 +3,5 @@
     <string name="title_activity_maps">Map</string>
     <string name = "buttonMap">Перейти к карте</string>
     <string name = "buttonMusic">Установить сигнал</string>
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyD2q3cdN8y353tANWwdPb2aO50m2GUnVPs</string>
 </resources>
