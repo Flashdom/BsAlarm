@@ -54,7 +54,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, (float) 0.5, locationListener);
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
@@ -79,6 +78,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         };
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, (float) 0.5, locationListener);
+
     }
 
 

@@ -4,7 +4,6 @@ public class MyLocation {
     private double x;
     private double y;
     private double r = 100;
-
     public double getX() {
         return x;
     }
@@ -24,8 +23,6 @@ public class MyLocation {
     public double getR() {
         return r;
     }
-
-
 
 
 
