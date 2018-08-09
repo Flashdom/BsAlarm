@@ -1,18 +1,14 @@
 package com.bsaldevs.bsalarmer;
 
-<<<<<<< HEAD
 import android.location.Location;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
-=======
->>>>>>> 515533694084c117c04b8d2e0cfdfb35c8abdb31
 public class MyLocation {
     private double x;
     private double y;
     private double r = 100;
-<<<<<<< HEAD
 
     public MyLocation(double x, double y) {
         this.x = x;
@@ -35,8 +31,6 @@ public class MyLocation {
         Log.d("CDA", "setLocation in MyLocation class");
     }
 
-=======
->>>>>>> 515533694084c117c04b8d2e0cfdfb35c8abdb31
     public double getX() {
         return x;
     }
@@ -56,10 +50,5 @@ public class MyLocation {
     public double getR() {
         return r;
     }
-
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 515533694084c117c04b8d2e0cfdfb35c8abdb31
+    
 }
