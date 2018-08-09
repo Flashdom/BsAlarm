@@ -28,6 +28,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationProviderClient;
+    private MyLocation myLocation;
 
     private String TAG = "CDA";
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
@@ -39,31 +40,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
+        myLocation = new MyLocation();
+
         getLocationPermission();
+        initMap();
     }
 
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
         if (locationPermissionGranted) {
+            Log.d(TAG, "locationPermissionGranted: true");
             getDeviceLocation();
+
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "onMapReady: we can't get needs permission");
                 return;
             }
             mMap.setMyLocationEnabled(true);
+            Log.d(TAG, "setMyLocation(true)");
+        } else {
+            Log.d(TAG, "onMapReady: locationPermissionGranted is false");
         }
     }
 
@@ -103,6 +104,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         switch (requestCode) {
             case LOCATION_PERMISSION_REQUEST_CODE: {
+                Log.d(TAG, "case LOCATION_PERMISSION_REQUEST_CODE");
                 if (grantResults.length > 0) {
                     for (int i = 0; i < grantResults.length; i++) {
                         if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
@@ -112,6 +114,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                     locationPermissionGranted = true;
                     initMap();
+                    Log.d(TAG, "map has been initialized");
                 }
             }
         }
@@ -129,6 +132,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             if (ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 locationPermissionGranted = true;
+                Log.d(TAG, "location permission granted");
             } else {
                 ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE);
             }
@@ -142,14 +146,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         try {
             if (locationPermissionGranted) {
+                Log.d(TAG, "getDeviceLocation: locationPermissionGranted");
                 Task location = fusedLocationProviderClient.getLastLocation();
                 location.addOnCompleteListener(new OnCompleteListener<Location>() {
                     @Override
                     public void onComplete(@NonNull com.google.android.gms.tasks.Task<Location> task) {
+                        Log.d(TAG, "getDeviceLocation: onComplete");
                         if (task.isSuccessful() && (task.getResult() != null)) {
                             Log.d(TAG, "onComplete: found location!");
                             Location currentLocation = (Location) task.getResult();
-                            Log.d(TAG, "location lat: " + currentLocation.getLatitude() + ", lng: " + currentLocation.getLongitude());
+                            Log.d(TAG, "onComplete: location lat: " + currentLocation.getLatitude() + ", lng: " + currentLocation.getLongitude());
+                            myLocation.setLocation(currentLocation);
+                            Log.d(TAG, "onComplete: set location to myLocation");
                             moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), 15f);
                         } else {
                             Log.d(TAG, "onComplete: current location is null");
