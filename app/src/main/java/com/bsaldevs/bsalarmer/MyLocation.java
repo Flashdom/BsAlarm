@@ -1,5 +1,6 @@
 package com.bsaldevs.bsalarmer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.location.Location;
@@ -11,23 +12,26 @@ public class MyLocation {
     private double x;
     private double y;
     private double r = 100;
-    List<Point> myPoints;
-    int points_amount=0;
+    private List<Point> myPoints;
+    private int points_amount=0;
 
 
     public MyLocation(double x, double y) {
         this.x = x;
         this.y = y;
+        myPoints = new ArrayList<>();
     }
 
     public MyLocation() {
         this.x = 0;
         this.y = 0;
+        myPoints = new ArrayList<>();
     }
 
     public MyLocation(LatLng latLng) {
         this.x = latLng.latitude;
         this.y = latLng.longitude;
+        myPoints = new ArrayList<>();
     }
 
     public void setLocation(Location location) {
@@ -39,19 +43,16 @@ public class MyLocation {
     public double getX() {
         return x;
     }
+
     public void notifyEveryone()
     {
-        for (Point e:myPoints
-             ) {
-            if ((x+r)>e.getX() && (y+r)>e.getY())
-            {
+        for (Point e : myPoints) {
+            if ((x + r) > e.getX() && (y + r) > e.getY()) {
                 e.setArrived();
-
             }
-
         }
-
     }
+
     public void addPoint(double x, double y)
     {
         myPoints.add(points_amount, new Point(x,y));

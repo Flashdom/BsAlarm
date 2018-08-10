@@ -28,11 +28,11 @@ public class Point {
         this.y = y;
     }
 
-public void setArrived()
-{
-    arrived=true;
-
-}
+    public void setArrived()
+    {
+        arrived = true;
+        wakeMeUp();
+    }
 
     public void wakeMeUp()
     {
