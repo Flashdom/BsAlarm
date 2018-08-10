@@ -64,10 +64,9 @@ public class MainMenuActivity extends AppCompatActivity {
         {
              myFile = data.getData();
             tv1.setText(String.valueOf(myLocation.getX())+ " " + String.valueOf(myLocation.getY()));
-             myFile = data.getData();
 
             mediaPlayer=MediaPlayer.create(this,myFile);
-            mplayergo(myFile);
+            //mplayergo(myFile);
 
 
 
