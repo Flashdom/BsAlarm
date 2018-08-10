@@ -24,11 +24,15 @@ public class MainMenuActivity extends AppCompatActivity {
     private Button b1;
     private Button b2;
     private MediaPlayer mediaPlayer;
-    private TextView savedUserData;
 
     private Uri myFile;
+    public static final int ABC=222;
+    private TextView tv1;
+    MyLocation myLocation = new MyLocation();
 
-    public static final int ABC = 222;
+    private TextView savedUserData;
+
+
     private static final int ERROR_DIALOG_REQUEST = 9001;
 
     private static final String FILE_NAME = "stations.txt";
@@ -38,17 +42,17 @@ public class MainMenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-        b1=findViewById(R.id.button);
+        tv1 = findViewById(R.id.textView);
+        b1 = findViewById(R.id.button);
+
         b1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (isServicesOK()) {
-                    Intent in = new Intent(MainMenuActivity.this, MapsActivity.class);
-                    startActivity(in);
-                }
+                Intent in = new Intent(MainMenuActivity.this, MapsActivity.class);
+                startActivity(in);
             }
         });
-        b2=findViewById(R.id.button2);
+        b2 = findViewById(R.id.button2);
 
         b2.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,7 +65,6 @@ public class MainMenuActivity extends AppCompatActivity {
         });
 
         savedUserData = findViewById(R.id.textUserData);
-
         initializeApplicationData();
     }
 
@@ -87,7 +90,7 @@ public class MainMenuActivity extends AppCompatActivity {
             String text = new String(bytes);
             savedUserData.setText(text);
         }
-            catch (IOException e) {
+        catch (IOException e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
@@ -130,10 +133,11 @@ public class MainMenuActivity extends AppCompatActivity {
     {
         if ((requestCode==ABC) && (resultCode == RESULT_OK ) && (data!=null))
         {
-            Uri myFile = data.getData();
+             myFile = data.getData();
+            tv1.setText(String.valueOf(myLocation.getX())+ " " + String.valueOf(myLocation.getY()));
 
             mediaPlayer=MediaPlayer.create(this,myFile);
-            mplayergo(myFile);
+            //mplayergo(myFile);
 
 
 
@@ -147,7 +151,7 @@ public class MainMenuActivity extends AppCompatActivity {
             mediaPlayer.reset();
             mediaPlayer.release();
             mediaPlayer = MediaPlayer.create(this, sound);
-            mediaPlayer.start();
+             mediaPlayer.start();
         } catch (Exception e) {
             e.printStackTrace();
         }

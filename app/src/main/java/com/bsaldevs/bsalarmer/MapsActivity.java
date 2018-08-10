@@ -43,7 +43,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 
         myLocation = new MyLocation();
-
+        myLocation.addPoint(54.7833342, 56.1178706);
         getLocationPermission();
         initMap();
     }

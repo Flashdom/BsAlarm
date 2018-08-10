@@ -4,8 +4,14 @@ public class Point {
     private double x;
     private double y;
     private boolean arrived = false;
+
     private boolean chosen = false;
     private MainMenuActivity mActivity = new MainMenuActivity();
+
+    public Point(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
 
     public boolean getChosen()
     {
@@ -14,11 +20,6 @@ public class Point {
     public void setChosen()
     {
         chosen = true;
-    }
-
-    public Point(double x, double y) {
-        this.x = x;
-        this.y = y;
     }
 
     public void setArrived()
