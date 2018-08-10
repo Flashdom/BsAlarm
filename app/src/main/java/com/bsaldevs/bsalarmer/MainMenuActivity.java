@@ -16,8 +16,9 @@ public class MainMenuActivity extends AppCompatActivity {
     private Button b1;
     private Button b2;
     private MediaPlayer mediaPlayer;
+    private Uri myFile;
     public static final int ABC=222;
-    TextView tv1;
+    private TextView tv1;
     MyLocation myLocation = new MyLocation();
 
 
@@ -55,10 +56,10 @@ public class MainMenuActivity extends AppCompatActivity {
     {
         if ((requestCode==ABC) && (resultCode == RESULT_OK ) && (data!=null))
         {
-            Uri myFile = data.getData();
+             myFile = data.getData();
             tv1.setText(String.valueOf(myLocation.getX())+ " " + String.valueOf(myLocation.getY()));
             mediaPlayer=MediaPlayer.create(this,myFile);
-            mplayergo(myFile);
+            //mplayergo(myFile);
 
 
 
@@ -76,6 +77,12 @@ public class MainMenuActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public Uri getMyFile()
+    {
+        return myFile;
+
     }
 
 }
