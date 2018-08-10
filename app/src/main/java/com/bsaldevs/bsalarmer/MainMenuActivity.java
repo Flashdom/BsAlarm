@@ -1,5 +1,6 @@
 package com.bsaldevs.bsalarmer;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -9,6 +10,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import java.io.IOException;
 
@@ -21,6 +26,7 @@ public class MainMenuActivity extends AppCompatActivity {
     private TextView tv1;
     MyLocation myLocation = new MyLocation();
 
+    private static final int ERROR_DIALOG_REQUEST = 9001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +64,10 @@ public class MainMenuActivity extends AppCompatActivity {
         {
              myFile = data.getData();
             tv1.setText(String.valueOf(myLocation.getX())+ " " + String.valueOf(myLocation.getY()));
+             myFile = data.getData();
+
             mediaPlayer=MediaPlayer.create(this,myFile);
-            //mplayergo(myFile);
+            mplayergo(myFile);
 
 
 
@@ -85,4 +93,21 @@ public class MainMenuActivity extends AppCompatActivity {
 
     }
 
+    public boolean isServicesOK() {
+        Log.d("CDA", "isServicesOK");
+
+        int available = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(MainMenuActivity.this);
+
+        if (available == ConnectionResult.SUCCESS) {
+            Log.d("CDA", "isServicesOK: GP services is available");
+            return true;
+        } else if (GoogleApiAvailability.getInstance().isUserResolvableError(available)) {
+            Log.d("CDA", "isServicesOK: error");
+            Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(MainMenuActivity.this, available, ERROR_DIALOG_REQUEST);
+            dialog.show();
+        } else {
+            Toast.makeText(this, "We can't make map request", Toast.LENGTH_SHORT).show();
+        }
+        return false;
+    }
 }
