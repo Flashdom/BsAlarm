@@ -26,15 +26,14 @@ public class MainMenuActivity extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
 
     private Uri myFile;
-    public static final int ABC=222;
+    public static final int ABC = 222;
     private TextView tv1;
-    MyLocation myLocation = new MyLocation();
+
+    private MyLocation myLocation = new MyLocation();
 
     private TextView savedUserData;
 
-
     private static final int ERROR_DIALOG_REQUEST = 9001;
-
     private static final String FILE_NAME = "stations.txt";
     private static final String TAG = "CDA";
 
@@ -179,5 +178,11 @@ public class MainMenuActivity extends AppCompatActivity {
             Toast.makeText(this, "We can't make map request", Toast.LENGTH_SHORT).show();
         }
         return false;
+    }
+
+    public void startService(View view) {
+        Log.d(TAG, "buttonStartService: onClick");
+        startService(new Intent(this, AlarmService.class));
+        Log.d(TAG, "buttonStartService: startService");
     }
 }

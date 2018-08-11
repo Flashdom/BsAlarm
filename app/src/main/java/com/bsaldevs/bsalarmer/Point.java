@@ -22,20 +22,19 @@ public class Point {
         chosen = true;
     }
 
-    public void setArrived()
+    public void setArrived(boolean arrived)
     {
-        arrived = true;
-        wakeMeUp();
+        this.arrived = arrived;
+        if (this.arrived)
+            wakeMeUp();
     }
 
     public void wakeMeUp()
     {
-        if (arrived==true)
-        {
-            mActivity.mplayergo(mActivity.getMyFile());
-            //code for waking up
-        }
+        mActivity.mplayergo(mActivity.getMyFile());
+        //code for waking up
     }
+
     public double getY() {
         return y;
     }

@@ -47,10 +47,18 @@ public class MyLocation {
     public void notifyEveryone()
     {
         for (Point e : myPoints) {
-            if ((x + r) > e.getX() && (y + r) > e.getY()) {
-                e.setArrived();
-            }
+            if (isOnTargetPlace(e))
+                e.setArrived(true);
+            else
+                e.setArrived(false);
         }
+    }
+
+    public boolean isOnTargetPlace(Point point) {
+        if ((x + r) > point.getX() && (y + r) > point.getY())
+            return true;
+        else
+            return false;
     }
 
     public void addPoint(double x, double y)
@@ -62,10 +70,8 @@ public class MyLocation {
     public void deletePoint(Point point)
     {
         for (int i=0; i<points_amount; i++) {
-
             myPoints.remove(myPoints.indexOf(point));
         }
-
     }
 
     public void setX(double x) {
@@ -83,7 +89,5 @@ public class MyLocation {
     public double getR() {
         return r;
     }
-
-
 
 }
