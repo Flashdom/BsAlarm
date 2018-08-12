@@ -132,15 +132,10 @@ public class MainMenuActivity extends AppCompatActivity {
     {
         if ((requestCode==ABC) && (resultCode == RESULT_OK ) && (data!=null))
         {
-             myFile = data.getData();
-            tv1.setText(String.valueOf(myLocation.getX())+ " " + String.valueOf(myLocation.getY()));
-
+            myFile = data.getData();
+            tv1.setText(String.valueOf(myLocation.getPosition()));
             mediaPlayer=MediaPlayer.create(this,myFile);
             //mplayergo(myFile);
-
-
-
-
         }
     }
     public void mplayergo (Uri sound)
