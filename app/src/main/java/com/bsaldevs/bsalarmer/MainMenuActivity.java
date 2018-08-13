@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,13 +26,11 @@ public class MainMenuActivity extends AppCompatActivity {
     private Button b2;
     private MediaPlayer mediaPlayer;
 
+    private MyLocation myLocation;
+
     private Uri myFile;
-    public static final int ABC = 222;
-    private TextView tv1;
-
-    private MyLocation myLocation = new MyLocation();
-
     private TextView savedUserData;
+    public static final int requestCodeForSongChoose = 222;
 
     private static final int ERROR_DIALOG_REQUEST = 9001;
     private static final String FILE_NAME = "stations.txt";
@@ -41,14 +40,19 @@ public class MainMenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-        tv1 = findViewById(R.id.textView);
+
+        myLocation = new MyLocation();
+
         b1 = findViewById(R.id.button);
 
         b1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent in = new Intent(MainMenuActivity.this, MapsActivity.class);
-                startActivity(in);
+                Intent intent = new Intent(MainMenuActivity.this, MapsActivity.class);
+                if (myFile != null)
+                    intent.putExtra("transfer", myFile.toString());
+                intent.putExtra("MY_LOCATION", myLocation);
+                startActivity(intent);
             }
         });
         b2 = findViewById(R.id.button2);
@@ -56,10 +60,10 @@ public class MainMenuActivity extends AppCompatActivity {
         b2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(Intent.ACTION_PICK);
-
-                i.setType("*/*");
-                startActivityForResult(i, ABC);
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+                //intent.setType("*/*");
+                //mplayergo(myFile);
+                startActivityForResult(intent, requestCodeForSongChoose);
             }
         });
 
@@ -130,31 +134,15 @@ public class MainMenuActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        if ((requestCode==ABC) && (resultCode == RESULT_OK ) && (data!=null))
+        if ((requestCode == requestCodeForSongChoose) && (resultCode == RESULT_OK ) && (data!=null))
         {
             myFile = data.getData();
-            tv1.setText(String.valueOf(myLocation.getPosition()));
-            mediaPlayer=MediaPlayer.create(this,myFile);
             //mplayergo(myFile);
         }
     }
-    public void mplayergo (Uri sound)
-    {
-        try {
-            mediaPlayer.stop();
-            mediaPlayer.reset();
-            mediaPlayer.release();
-            mediaPlayer = MediaPlayer.create(this, sound);
-             mediaPlayer.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
-    public Uri getMyFile()
-    {
+    public Uri getMyFile() {
         return myFile;
-
     }
 
     public boolean isServicesOK() {
@@ -177,7 +165,9 @@ public class MainMenuActivity extends AppCompatActivity {
 
     public void startService(View view) {
         Log.d(TAG, "buttonStartService: onClick");
-        startService(new Intent(this, AlarmService.class));
+        Intent intent = new Intent(this, AlarmService.class);
+        intent.putExtra("MY_LOCATION", myLocation);
+        startService(intent);
         Log.d(TAG, "buttonStartService: startService");
     }
 }

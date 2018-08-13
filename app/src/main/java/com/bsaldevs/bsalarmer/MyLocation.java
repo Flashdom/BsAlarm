@@ -1,5 +1,6 @@
 package com.bsaldevs.bsalarmer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,66 +12,73 @@ import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
-public class MyLocation {
+public class MyLocation implements Serializable{
 
-    private LatLng position;
+    private double latitude;
+    private double longitude;
     private double r = 100;
-    private List<Marker> markers;
+    private List<Point> points;
     private Context context;
 
     public MyLocation(double lat, double lng) {
-        position = new LatLng(lat, lng);
-        markers = new ArrayList<>();
+        latitude = lat;
+        longitude = lng;
+        points = new ArrayList<>();
     }
 
     public MyLocation() {
-        position = new LatLng(0, 0);
-        markers = new ArrayList<>();
+        latitude = 0;
+        longitude = 0;
+        points = new ArrayList<>();
     }
 
     public MyLocation(LatLng latLng) {
-        position = latLng;
-        markers = new ArrayList<>();
+        latitude = latLng.latitude;
+        longitude = latLng.longitude;
+        points = new ArrayList<>();
     }
 
     public void setLocation(Location location) {
-        double lat = location.getLatitude();
-        double lng = location.getLongitude();
-        position = new LatLng(lat, lng);
+        latitude = location.getLatitude();
+        longitude = location.getLongitude();
         Log.d("CDA", "setLocation in MyLocation class");
     }
 
     public void notifyEveryone() {
-        for (Marker mark : markers) {
-            if (isOnTargetPlace(mark))
+        for (Point p : points) {
+            if (isOnTargetPlace(p))
                 wakeMeUp();
         }
     }
 
-    public boolean isOnTargetPlace(Marker mark) {
-        if ((position.latitude + r) > mark.getPosition().latitude && (position.longitude + r) > mark.getPosition().longitude)
+    public boolean isOnTargetPlace(Point p) {
+
+        Marker mark = p.getMarker();
+
+        if ((latitude + r) > mark.getPosition().latitude && (longitude + r) > mark.getPosition().longitude)
             return true;
         else
             return false;
     }
 
-    public void addMarker(Marker mark) {
-        markers.add(mark);
+    public void addPoint(Marker marker) {
+        points.add(new Point(marker));
     }
 
-    public void removeMarker(Marker mark) {
-        markers.remove(mark);
-        mark.remove();
+    public void removePoint(Marker marker) {
+        for (Point p : points) {
+            if (p.getMarker().equals(marker)) {
+                points.remove(p);
+                p.getMarker().remove();
+                break;
+            }
+        }
     }
 
     public void wakeMeUp()
     {
+        Log.d("CDA", "wakeMeUp triggered");
         Toast.makeText(context, "Wake Up", Toast.LENGTH_SHORT).show();
-        //code for waking up
-    }
-
-    public LatLng getPosition() {
-        return position;
     }
 
     public void setContext(MapsActivity context) {

@@ -2,17 +2,15 @@ package com.bsaldevs.bsalarmer;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.*;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Display;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -21,7 +19,6 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -35,14 +32,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationProviderClient;
-    private MyLocation myLocation;
 
     private String TAG = "CDA";
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
@@ -51,6 +44,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private Projection projection;
     private ImageView trashView;
+    private MyLocation myLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +54,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         trashView = findViewById(R.id.trashView);
 
-        myLocation = new MyLocation();
+        Intent intent = getIntent();
+        myLocation = (MyLocation) intent.getSerializableExtra("MY_LOCATION");
         myLocation.setContext(this);
 
         getLocationPermission();
@@ -69,9 +64,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
+        mMap = googleMap;
         if (locationPermissionGranted) {
             Log.d(TAG, "locationPermissionGranted: true");
             getDeviceLocation();
@@ -81,6 +75,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d(TAG, "onMapReady: we can't get needs permission");
                 return;
             }
+
             mMap.setMyLocationEnabled(true);
             Log.d(TAG, "setMyLocation(true)");
         } else {
@@ -151,10 +146,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 // Получение размеров экрана и элементов экрана
 
-                Display display = getWindowManager().getDefaultDisplay();
-                android.graphics.Point size = new android.graphics.Point();
-                display.getSize(size);
-
                 SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                         .findFragmentById(R.id.map);
 
@@ -162,14 +153,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 if (screenPosition.y > height - trashView.getHeight()) {
                     Toast.makeText(MapsActivity.this, "marker has been deleted", Toast.LENGTH_SHORT).show();
-                    myLocation.removeMarker(marker);
+                    myLocation.removePoint(marker);
+                    Log.d(TAG, "onMarkerDragEnd: marker has been deleted");
                 }
 
                 trashView.setVisibility(View.INVISIBLE);
 
                 Log.d(TAG, "onMarkerDragEnd: screen position of point is " + screenPosition.toString());
                 Log.d(TAG, "onMarkerDragEnd: screen height is " + height);
-                Log.d(TAG, "onMarkerDragEnd: marker has been deleted");
             }
         });
 
@@ -187,6 +178,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(MapsActivity.this, "onInfoWindowClick", Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 
     @Override
@@ -220,7 +212,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .target(position)
                 .zoom(mMap.getCameraPosition().zoom)
                 .build()), 500, null);
-        myLocation.addMarker(marker);
+        myLocation.addPoint(marker);
     }
 
     @Override
@@ -269,6 +261,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void getDeviceLocation() {
         Log.d(TAG, "getDeviceLocation");
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
         try {
             if (locationPermissionGranted) {
                 Log.d(TAG, "getDeviceLocation: locationPermissionGranted");
@@ -300,13 +293,5 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void moveCamera(LatLng latLng, float zoom) {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
     }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        Log.d(TAG, "onLocationChanged");
-        Toast.makeText(this, "Your location changed", Toast.LENGTH_SHORT).show();
-        myLocation.notifyEveryone();
-    }
-
 
 }
