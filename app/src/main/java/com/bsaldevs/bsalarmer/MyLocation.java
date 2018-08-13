@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.content.Context;
 import android.location.Location;
 import android.util.Log;
 import android.widget.Toast;
@@ -12,13 +11,13 @@ import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
+
 public class MyLocation implements Serializable{
 
     private double latitude;
     private double longitude;
     private double r = 100;
     private List<Point> points;
-    private Context context;
 
     public MyLocation(double lat, double lng) {
         latitude = lat;
@@ -61,6 +60,7 @@ public class MyLocation implements Serializable{
             return false;
     }
 
+
     public void addPoint(Marker marker) {
         points.add(new Point(marker));
     }
@@ -75,13 +75,12 @@ public class MyLocation implements Serializable{
         }
     }
 
-    public void wakeMeUp()
-    {
+    public void wakeMeUp() {
         Log.d("CDA", "wakeMeUp triggered");
-        Toast.makeText(context, "Wake Up", Toast.LENGTH_SHORT).show();
     }
 
-    public void setContext(MapsActivity context) {
-        this.context = context;
+    public double getR() {
+        return r;
     }
+
 }

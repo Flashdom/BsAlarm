@@ -1,5 +1,6 @@
 package com.bsaldevs.bsalarmer;
 
+
 import android.app.Dialog;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -24,8 +25,7 @@ import java.io.IOException;
 public class MainMenuActivity extends AppCompatActivity {
     private Button b1;
     private Button b2;
-    private MediaPlayer mediaPlayer;
-
+    private static MediaPlayer mediaPlayer;
     private MyLocation myLocation;
 
     private Uri myFile;
@@ -40,7 +40,6 @@ public class MainMenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-
         myLocation = new MyLocation();
 
         b1 = findViewById(R.id.button);
@@ -61,8 +60,7 @@ public class MainMenuActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
-                //intent.setType("*/*");
-                //mplayergo(myFile);
+
                 startActivityForResult(intent, requestCodeForSongChoose);
             }
         });

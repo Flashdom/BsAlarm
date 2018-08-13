@@ -5,6 +5,11 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
@@ -32,6 +37,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -45,18 +54,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Projection projection;
     private ImageView trashView;
     private MyLocation myLocation;
+    
+    final String DATA_SD = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+            + "/music.mp3";
+    private Uri mysong;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 
         trashView = findViewById(R.id.trashView);
-
         Intent intent = getIntent();
+
+        if (intent.getStringExtra("transfer") != null)
+            mysong = Uri.parse(intent.getStringExtra("transfer"));
         myLocation = (MyLocation) intent.getSerializableExtra("MY_LOCATION");
-        myLocation.setContext(this);
 
         getLocationPermission();
         initMap();
@@ -178,7 +191,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(MapsActivity.this, "onInfoWindowClick", Toast.LENGTH_SHORT).show();
             }
         });
-
     }
 
     @Override
@@ -293,5 +305,5 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void moveCamera(LatLng latLng, float zoom) {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
     }
-
 }
+

@@ -1,27 +1,22 @@
 package com.bsaldevs.bsalarmer;
 
-import android.net.Uri;
-
 import com.google.android.gms.maps.model.Marker;
 
 public class Point {
 
     private boolean arrived = false;
     private boolean chosen = false;
-
     private Marker marker;
 
     public Point(Marker mark) {
         marker = mark;
     }
 
-    public boolean getChosen()
-    {
+    public boolean getChosen() {
         return chosen;
     }
 
-    public void setChosen()
-    {
+    public void setChosen() {
         chosen = true;
     }
 
@@ -29,8 +24,7 @@ public class Point {
         return arrived;
     }
 
-    public void setArrived(boolean arrived)
-    {
+    public void setArrived(boolean arrived) {
         this.arrived = arrived;
     }
 
