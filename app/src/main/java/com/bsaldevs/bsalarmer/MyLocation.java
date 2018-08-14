@@ -16,8 +16,9 @@ public class MyLocation implements Serializable{
 
     private double latitude;
     private double longitude;
-    private double r = 100;
+    private double r = 0.001;
     private List<Point> points;
+    private String tag = "";
 
     public MyLocation(double lat, double lng) {
         latitude = lat;
@@ -47,33 +48,48 @@ public class MyLocation implements Serializable{
     }
 
     public void notifyEveryone() {
+
+        Log.d(Constants.TAG, "notifyEveryone: points size is " + points.size());
+
         for (Point p : points) {
             if (isOnTargetPlace(p))
-                wakeMeUp();
+                p.setArrived(true);
         }
     }
 
     public boolean isOnTargetPlace(Point p) {
 
-        Marker mark = p.getMarker();
+        Log.d(Constants.TAG, "isOnTargetPlace: myLocation lat " + latitude);
+        Log.d(Constants.TAG, "isOnTargetPlace: myLocation lng " + longitude);
+        Log.d(Constants.TAG, "isOnTargetPlace: point lat " + p.getLat());
+        Log.d(Constants.TAG, "isOnTargetPlace: point lng " + p.getLng());
 
-        if ((latitude + r) > mark.getPosition().latitude && (longitude + r) > mark.getPosition().longitude)
+        if ((latitude + r) > p.getLat() && (longitude + r) > p.getLng())
             return true;
         else
             return false;
     }
 
+    public boolean isPointsExist() {
+        Log.d(Constants.TAG, "isPointsExist: size = " + points.size());
+        if (points.size() > 0)
+            return true;
+        else
+            return false;
+    }
 
-    public void addPoint(Marker marker) {
-        points.add(new Point(marker));
+    public void addPoint(Point point) {
+        points.add(point);
+
+        Log.d(Constants.TAG, "addPoint: points size is " + points.size());
+
         Log.d("CDA", "addPoint from MyLocation class");
     }
 
-    public void removePoint(Marker marker) {
+    public void removePoint(Point point) {
         for (Point p : points) {
-            if (p.getMarker().equals(marker)) {
+            if (p.equals(point)) {
                 points.remove(p);
-                p.getMarker().remove();
                 break;
             }
         }
@@ -89,5 +105,19 @@ public class MyLocation implements Serializable{
 
     public List<Point> getPoints() {
         return points;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public boolean isAnyoneArrived() {
+
+        for (Point p : points) {
+            if (p.isArrived())
+                return true;
+        }
+
+        return false;
     }
 }

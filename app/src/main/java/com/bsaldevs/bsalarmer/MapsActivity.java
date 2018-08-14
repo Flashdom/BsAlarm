@@ -5,11 +5,8 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
@@ -40,8 +37,6 @@ import com.google.android.gms.tasks.Task;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -169,7 +164,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 if (screenPosition.y > height - trashView.getHeight()) {
                     Toast.makeText(MapsActivity.this, "marker has been deleted", Toast.LENGTH_SHORT).show();
-                    myLocation.removePoint(marker);
+
+                    myLocation.removePoint(new Point(marker.getPosition().latitude, marker.getPosition().longitude, marker.getTitle()));
+                    marker.remove();
+
+                    Intent intent = new Intent(MapsActivity.this, AlarmService.class);
+                    intent.putExtra("MY_LOCATION", myLocation);
+                    startService(intent);
                     save();
                     Log.d(TAG, "onMarkerDragEnd: marker has been deleted");
                 }
@@ -217,21 +218,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onBackPressed();
     }
 
-    public void addMarkOfStationToMap(LatLng position, String name) {
-        Log.d("mapLog", "new point added to map: " + mMap + ", position: " + position);
+    public void addMarkOfStationToMap(LatLng position, String title) {
+        Log.d(TAG, "new point added to map: " + mMap + ", position: " + position);
 
-        MarkerOptions markerOptions = new MarkerOptions()
-                .position(position)
-                .title(name)
-                .draggable(true);
+        createMarker(position, title);
 
-        Marker marker = mMap.addMarker(markerOptions);
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.builder()
                 .target(position)
                 .zoom(mMap.getCameraPosition().zoom)
                 .build()), 500, null);
-        myLocation.addPoint(marker);
+
+        myLocation.addPoint(new Point(position.latitude, position.longitude, title));
+        Intent intent = new Intent(this, AlarmService.class);
+        intent.putExtra("MY_LOCATION", myLocation);
+        startService(intent);
         save();
+    }
+
+    private Marker createMarker(LatLng position, String name) {
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(position)
+                .title(name)
+                .draggable(true);
+        return mMap.addMarker(markerOptions);
     }
 
     @Override
@@ -313,6 +322,75 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
     }
 
+    private void readMarkers(String data) {
+
+        String lat = "";
+        String lng = "";
+        String name = "";
+
+        boolean isLat = true;
+        boolean isPosition = true;
+        int count = 0;
+
+        for (int i = 0; i < data.length(); i++) {
+
+            if (data.charAt(i) == '\n') {
+
+                double latd = 0;
+                double lngd = 0;
+
+                try {
+                    latd = Double.parseDouble(lat);
+                    lngd = Double.parseDouble(lng);
+                } catch (Exception e) {
+                    System.err.print(e.getMessage());
+                }
+
+                addMarkOfStationToMap(new LatLng(latd, lngd), name);
+
+                lat = "";
+                lng = "";
+                name = "";
+                count = 0;
+                isLat = true;
+                isPosition = true;
+
+                continue;
+            }
+
+            if (data.charAt(i) == ';') {
+                count++;
+                if (count == 1)
+                    isLat = false;
+                if (count == 2)
+                    isPosition = false;
+                continue;
+            }
+
+            if (isPosition) {
+                if (isLat)
+                    lat += data.charAt(i);
+                else
+                    lng += data.charAt(i);
+            } else {
+                name += data.charAt(i);
+            }
+        }
+    }
+
+    private String writeMarkers() {
+        String data = "";
+        for (Point point : myLocation.getPoints()) {
+            data += point.getLat();
+            data += ";";
+            data += point.getLng();
+            data += ";";
+            data += point.getTitle();
+            data += "\n";
+        }
+        return data;
+    }
+
     private void load() {
         Log.d(Constants.TAG, "loading user data from file: " + Constants.MARKERS_FILE_NAME);
         FileInputStream in = null;
@@ -323,55 +401,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             in.read(bytes);
             String text = new String(bytes);
 
-            String lat = "";
-            String lng = "";
-            String name = "";
-
             Log.d(TAG, "file length is " + text.length());
             Log.d(TAG, text);
 
-            boolean isLat = true;
-            boolean isPosition = true;
-            int count = 0;
-
-            for (int i = 0; i < text.length(); i++) {
-
-                if (text.charAt(i) == '\n') {
-
-                    double latd = Double.parseDouble(lat);
-                    double lngd = Double.parseDouble(lng);
-
-                    addMarkOfStationToMap(new LatLng(latd, lngd), name);
-
-                    lat = "";
-                    lng = "";
-                    name = "";
-                    count = 0;
-                    isLat = true;
-                    isPosition = true;
-
-                    continue;
-                }
-
-                if (text.charAt(i) == ';') {
-                    count++;
-                    if (count == 1)
-                        isLat = false;
-                    if (count == 2)
-                        isPosition = false;
-                    continue;
-                }
-
-                if (isPosition) {
-                    if (isLat)
-                        lat += text.charAt(i);
-                    else
-                        lng += text.charAt(i);
-                } else {
-                    name += text.charAt(i);
-                }
-            }
-
+            readMarkers(text);
+            Toast.makeText(this, "The file was loaded", Toast.LENGTH_SHORT).show();
         }
         catch (IOException e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -391,16 +425,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void save() {
         Log.d(Constants.TAG, "saving user data to file: " + Constants.MARKERS_FILE_NAME);
         FileOutputStream out = null;
-        String data = "";
 
-        for (Point point : myLocation.getPoints()) {
-            data += point.getMarker().getPosition().latitude;
-            data += ";";
-            data += point.getMarker().getPosition().longitude;
-            data += ";";
-            data += point.getMarker().getTitle();
-            data += "\n";
-        }
+        String data = writeMarkers();
 
         try {
             out = openFileOutput(Constants.MARKERS_FILE_NAME, MODE_PRIVATE);

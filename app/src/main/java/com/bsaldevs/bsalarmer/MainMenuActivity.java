@@ -1,6 +1,5 @@
 package com.bsaldevs.bsalarmer;
 
-
 import android.app.Dialog;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -11,16 +10,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 public class MainMenuActivity extends AppCompatActivity {
     private Button b1;
@@ -39,6 +32,7 @@ public class MainMenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
         myLocation = new MyLocation();
+        myLocation.setTag("tag");
 
         b1 = findViewById(R.id.button);
 
@@ -59,8 +53,9 @@ public class MainMenuActivity extends AppCompatActivity {
         b2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
-
+                Intent intent = new Intent();
+                intent.setType("audio/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(intent, requestCodeForSongChoose);
             }
         });
@@ -69,22 +64,13 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     private void initializeApplicationData() {
-        /*
-        try {
-            if (openFileInput(FILE_NAME) != null) {
-                Log.d(TAG, "The file: " + FILE_NAME + " is exist");
-                loadUserData();
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        saveUserData();*/
+
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if ((requestCode == requestCodeForSongChoose) && (resultCode == RESULT_OK ) && (data!=null)) {
-            myFile = data.getData();
+            Constants.SOUND_URI = data.getData();
         }
     }
 

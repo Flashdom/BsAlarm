@@ -32,31 +32,21 @@ public class AlarmService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "onCreate");
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand");
-
-        myLocation = (MyLocation) intent.getSerializableExtra("MY_LOCATION");
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return Service.START_STICKY;
+            return;
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, new android.location.LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 Log.d(TAG, "onLocationChanged");
                 myLocation.notifyEveryone();
+                if (myLocation.isAnyoneArrived()) {
+                    Log.d(TAG, "onLocationChanged: anyone is arrived");
+                    playSong();
+                }
             }
 
             @Override
@@ -74,6 +64,23 @@ public class AlarmService extends Service {
                 Log.d(TAG, "onProviderDisabled");
             }
         });
+
+        Log.d(TAG, "onCreate");
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand");
+
+        song = Constants.SOUND_URI;
+        myLocation = (MyLocation) intent.getSerializableExtra("MY_LOCATION");
+
         return super.onStartCommand(intent, flags, startId);
     }
 
