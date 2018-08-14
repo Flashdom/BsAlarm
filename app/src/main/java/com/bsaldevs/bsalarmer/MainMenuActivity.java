@@ -29,11 +29,9 @@ public class MainMenuActivity extends AppCompatActivity {
     private MyLocation myLocation;
 
     private Uri myFile;
-    private TextView savedUserData;
     public static final int requestCodeForSongChoose = 222;
 
     private static final int ERROR_DIALOG_REQUEST = 9001;
-    private static final String FILE_NAME = "stations.txt";
     private static final String TAG = "CDA";
 
     @Override
@@ -47,11 +45,13 @@ public class MainMenuActivity extends AppCompatActivity {
         b1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainMenuActivity.this, MapsActivity.class);
-                if (myFile != null)
-                    intent.putExtra("transfer", myFile.toString());
-                intent.putExtra("MY_LOCATION", myLocation);
-                startActivity(intent);
+                if (isServicesOK()) {
+                    Intent intent = new Intent(MainMenuActivity.this, MapsActivity.class);
+                    if (myFile != null)
+                        intent.putExtra("transfer", myFile.toString());
+                    intent.putExtra("MY_LOCATION", myLocation);
+                    startActivity(intent);
+                }
             }
         });
         b2 = findViewById(R.id.button2);
@@ -65,11 +65,11 @@ public class MainMenuActivity extends AppCompatActivity {
             }
         });
 
-        savedUserData = findViewById(R.id.textUserData);
         initializeApplicationData();
     }
 
     private void initializeApplicationData() {
+        /*
         try {
             if (openFileInput(FILE_NAME) != null) {
                 Log.d(TAG, "The file: " + FILE_NAME + " is exist");
@@ -78,64 +78,13 @@ public class MainMenuActivity extends AppCompatActivity {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        saveUserData();
-    }
-
-    private void loadUserData() {
-        FileInputStream in = null;
-
-        try {
-            in = openFileInput(FILE_NAME);
-            byte[] bytes = new byte[in.available()];
-            in.read(bytes);
-            String text = new String(bytes);
-            savedUserData.setText(text);
-        }
-        catch (IOException e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-
-        finally {
-            try {
-                if (in!=null)
-                    in.close();
-            }
-            catch(IOException e) {
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    private void saveUserData() {
-        FileOutputStream out = null;
-        String data = "1234567890";
-        try {
-            out = openFileOutput(FILE_NAME, MODE_PRIVATE);
-            Log.d(TAG, "The file was opened");
-            out.write(data.getBytes());
-            Toast.makeText(this, "The file was saved", Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-        finally {
-            try {
-                if (out != null) {
-                    out.close();
-                    Log.d(TAG, "The file was closed");
-                }
-            } catch (IOException e) {
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        }
+        saveUserData();*/
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        if ((requestCode == requestCodeForSongChoose) && (resultCode == RESULT_OK ) && (data!=null))
-        {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if ((requestCode == requestCodeForSongChoose) && (resultCode == RESULT_OK ) && (data!=null)) {
             myFile = data.getData();
-            //mplayergo(myFile);
         }
     }
 

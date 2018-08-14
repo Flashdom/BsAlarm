@@ -37,6 +37,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +57,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Projection projection;
     private ImageView trashView;
     private MyLocation myLocation;
-    
+
     final String DATA_SD = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
             + "/music.mp3";
     private Uri mysong;
@@ -167,6 +170,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (screenPosition.y > height - trashView.getHeight()) {
                     Toast.makeText(MapsActivity.this, "marker has been deleted", Toast.LENGTH_SHORT).show();
                     myLocation.removePoint(marker);
+                    save();
                     Log.d(TAG, "onMarkerDragEnd: marker has been deleted");
                 }
 
@@ -191,6 +195,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(MapsActivity.this, "onInfoWindowClick", Toast.LENGTH_SHORT).show();
             }
         });
+
+        load();
     }
 
     @Override
@@ -225,6 +231,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .zoom(mMap.getCameraPosition().zoom)
                 .build()), 500, null);
         myLocation.addPoint(marker);
+        save();
     }
 
     @Override
@@ -305,5 +312,113 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void moveCamera(LatLng latLng, float zoom) {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
     }
-}
 
+    private void load() {
+        Log.d(Constants.TAG, "loading user data from file: " + Constants.MARKERS_FILE_NAME);
+        FileInputStream in = null;
+
+        try {
+            in = openFileInput(Constants.MARKERS_FILE_NAME);
+            byte[] bytes = new byte[in.available()];
+            in.read(bytes);
+            String text = new String(bytes);
+
+            String lat = "";
+            String lng = "";
+            String name = "";
+
+            Log.d(TAG, "file length is " + text.length());
+            Log.d(TAG, text);
+
+            boolean isLat = true;
+            boolean isPosition = true;
+            int count = 0;
+
+            for (int i = 0; i < text.length(); i++) {
+
+                if (text.charAt(i) == '\n') {
+
+                    double latd = Double.parseDouble(lat);
+                    double lngd = Double.parseDouble(lng);
+
+                    addMarkOfStationToMap(new LatLng(latd, lngd), name);
+
+                    lat = "";
+                    lng = "";
+                    name = "";
+                    count = 0;
+                    isLat = true;
+                    isPosition = true;
+
+                    continue;
+                }
+
+                if (text.charAt(i) == ';') {
+                    count++;
+                    if (count == 1)
+                        isLat = false;
+                    if (count == 2)
+                        isPosition = false;
+                    continue;
+                }
+
+                if (isPosition) {
+                    if (isLat)
+                        lat += text.charAt(i);
+                    else
+                        lng += text.charAt(i);
+                } else {
+                    name += text.charAt(i);
+                }
+            }
+
+        }
+        catch (IOException e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+
+        finally {
+            try {
+                if (in != null)
+                    in.close();
+            }
+            catch(IOException e) {
+                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void save() {
+        Log.d(Constants.TAG, "saving user data to file: " + Constants.MARKERS_FILE_NAME);
+        FileOutputStream out = null;
+        String data = "";
+
+        for (Point point : myLocation.getPoints()) {
+            data += point.getMarker().getPosition().latitude;
+            data += ";";
+            data += point.getMarker().getPosition().longitude;
+            data += ";";
+            data += point.getMarker().getTitle();
+            data += "\n";
+        }
+
+        try {
+            out = openFileOutput(Constants.MARKERS_FILE_NAME, MODE_PRIVATE);
+            Log.d(Constants.TAG, "The file was opened");
+            out.write(data.getBytes());
+            Toast.makeText(this, "The file was saved", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        finally {
+            try {
+                if (out != null) {
+                    out.close();
+                    Log.d(Constants.TAG, "The file was closed");
+                }
+            } catch (IOException e) {
+                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+}

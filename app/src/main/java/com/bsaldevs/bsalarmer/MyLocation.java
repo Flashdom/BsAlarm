@@ -23,18 +23,21 @@ public class MyLocation implements Serializable{
         latitude = lat;
         longitude = lng;
         points = new ArrayList<>();
+        Log.d("CDA", "myLocation obj created by (double, double) constructor");
     }
 
     public MyLocation() {
         latitude = 0;
         longitude = 0;
         points = new ArrayList<>();
+        Log.d("CDA", "myLocation obj created by () constructor");
     }
 
     public MyLocation(LatLng latLng) {
         latitude = latLng.latitude;
         longitude = latLng.longitude;
         points = new ArrayList<>();
+        Log.d("CDA", "myLocation obj created by (LatLng) constructor");
     }
 
     public void setLocation(Location location) {
@@ -63,6 +66,7 @@ public class MyLocation implements Serializable{
 
     public void addPoint(Marker marker) {
         points.add(new Point(marker));
+        Log.d("CDA", "addPoint from MyLocation class");
     }
 
     public void removePoint(Marker marker) {
@@ -83,4 +87,7 @@ public class MyLocation implements Serializable{
         return r;
     }
 
+    public List<Point> getPoints() {
+        return points;
+    }
 }
