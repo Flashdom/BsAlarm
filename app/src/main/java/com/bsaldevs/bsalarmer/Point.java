@@ -1,7 +1,4 @@
 package com.bsaldevs.bsalarmer;
-
-import com.google.android.gms.maps.model.Marker;
-
 import java.io.Serializable;
 
 public class Point implements Serializable {
@@ -11,6 +8,7 @@ public class Point implements Serializable {
     private double radius = 0;
     private double lat = 0;
     private double lng = 0;
+    private String id = "";
 
     private String title = "";
 
@@ -18,6 +16,10 @@ public class Point implements Serializable {
         this.lat = lat;
         this.lng = lng;
         this.title = title;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setRadius(double radius) {
@@ -83,4 +85,7 @@ public class Point implements Serializable {
         return result;
     }
 
+    public String getId() {
+        return id;
+    }
 }

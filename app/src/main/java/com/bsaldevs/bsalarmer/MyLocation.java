@@ -3,22 +3,16 @@ package com.bsaldevs.bsalarmer;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
 import android.location.Location;
 import android.util.Log;
-import android.widget.Toast;
-
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-
 
 public class MyLocation implements Serializable{
 
     private double latitude;
     private double longitude;
-    private double r = 0.001;
+    private double radius = 0.001;
     private List<Point> points;
-    private String tag = "";
 
     public MyLocation(double lat, double lng) {
         latitude = lat;
@@ -45,6 +39,7 @@ public class MyLocation implements Serializable{
         latitude = location.getLatitude();
         longitude = location.getLongitude();
         Log.d("CDA", "setLocation in MyLocation class");
+        notifyEveryone();
     }
 
     public void notifyEveryone() {
@@ -64,15 +59,10 @@ public class MyLocation implements Serializable{
         Log.d(Constants.TAG, "isOnTargetPlace: point lat " + p.getLat());
         Log.d(Constants.TAG, "isOnTargetPlace: point lng " + p.getLng());
 
-        if ((latitude + r) > p.getLat() && (longitude + r) > p.getLng())
-            return true;
-        else
-            return false;
-    }
+        Log.d(Constants.TAG, "isOnTargetPlace: Math.abs(latitude + p.getLat()) = " + Math.abs(latitude + p.getLat()));
+        Log.d(Constants.TAG, "isOnTargetPlace: Math.abs(longitude + p.getLng()) = " + Math.abs(longitude + p.getLng()));
 
-    public boolean isPointsExist() {
-        Log.d(Constants.TAG, "isPointsExist: size = " + points.size());
-        if (points.size() > 0)
+        if (Math.abs(latitude + p.getLat()) < radius && Math.abs(longitude + p.getLng()) < radius)
             return true;
         else
             return false;
@@ -88,27 +78,20 @@ public class MyLocation implements Serializable{
 
     public void removePoint(Point point) {
         for (Point p : points) {
-            if (p.equals(point)) {
+            if (p.getId().equals(point.getId())) {
                 points.remove(p);
+                Log.d(Constants.TAG, "removePoint: id = " + p.getId());
                 break;
             }
         }
     }
 
-    public void wakeMeUp() {
-        Log.d("CDA", "wakeMeUp triggered");
-    }
-
     public double getR() {
-        return r;
+        return radius;
     }
 
     public List<Point> getPoints() {
         return points;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
     }
 
     public boolean isAnyoneArrived() {

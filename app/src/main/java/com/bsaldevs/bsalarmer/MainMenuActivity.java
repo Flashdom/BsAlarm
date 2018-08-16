@@ -2,9 +2,6 @@ package com.bsaldevs.bsalarmer;
 
 import android.app.Dialog;
 import android.content.Intent;
-import android.media.MediaPlayer;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,23 +13,19 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 public class MainMenuActivity extends AppCompatActivity {
+
     private Button b1;
     private Button b2;
-    private static MediaPlayer mediaPlayer;
     private MyLocation myLocation;
 
-    private Uri myFile;
     public static final int requestCodeForSongChoose = 222;
-
     private static final int ERROR_DIALOG_REQUEST = 9001;
-    private static final String TAG = "CDA";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
         myLocation = new MyLocation();
-        myLocation.setTag("tag");
 
         b1 = findViewById(R.id.button);
 
@@ -40,11 +33,14 @@ public class MainMenuActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isServicesOK()) {
-                    Intent intent = new Intent(MainMenuActivity.this, MapsActivity.class);
-                    if (myFile != null)
-                        intent.putExtra("transfer", myFile.toString());
-                    intent.putExtra("MY_LOCATION", myLocation);
-                    startActivity(intent);
+
+                    Intent service = new Intent(MainMenuActivity.this, AlarmService.class);
+                    service.putExtra("MY_LOCATION", myLocation);
+                    startService(service);
+
+                    Intent maps = new Intent(MainMenuActivity.this, MapsActivity.class);
+                    maps.putExtra("MY_LOCATION", myLocation);
+                    startActivity(maps);
                 }
             }
         });
@@ -60,11 +56,6 @@ public class MainMenuActivity extends AppCompatActivity {
             }
         });
 
-        initializeApplicationData();
-    }
-
-    private void initializeApplicationData() {
-
     }
 
     @Override
@@ -72,10 +63,6 @@ public class MainMenuActivity extends AppCompatActivity {
         if ((requestCode == requestCodeForSongChoose) && (resultCode == RESULT_OK ) && (data!=null)) {
             Constants.SOUND_URI = data.getData();
         }
-    }
-
-    public Uri getMyFile() {
-        return myFile;
     }
 
     public boolean isServicesOK() {
@@ -94,13 +81,5 @@ public class MainMenuActivity extends AppCompatActivity {
             Toast.makeText(this, "We can't make map request", Toast.LENGTH_SHORT).show();
         }
         return false;
-    }
-
-    public void startService(View view) {
-        Log.d(TAG, "buttonStartService: onClick");
-        Intent intent = new Intent(this, AlarmService.class);
-        intent.putExtra("MY_LOCATION", myLocation);
-        startService(intent);
-        Log.d(TAG, "buttonStartService: startService");
     }
 }

@@ -1,6 +1,7 @@
 package com.bsaldevs.bsalarmer;
 
 import android.*;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -15,7 +16,6 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 /**
  * Created by azatiSea on 10.08.2018.
@@ -42,10 +42,10 @@ public class AlarmService extends Service {
             @Override
             public void onLocationChanged(Location location) {
                 Log.d(TAG, "onLocationChanged");
-                myLocation.notifyEveryone();
+                myLocation.setLocation(location);
                 if (myLocation.isAnyoneArrived()) {
                     Log.d(TAG, "onLocationChanged: anyone is arrived");
-                    playSong();
+                    alarm();
                 }
             }
 

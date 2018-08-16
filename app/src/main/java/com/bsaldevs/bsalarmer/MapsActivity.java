@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -44,7 +43,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationProviderClient;
 
-    private String TAG = "CDA";
+    private String TAG = Constants.TAG;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
 
     private Boolean locationPermissionGranted = false;
@@ -55,7 +54,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     final String DATA_SD = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
             + "/music.mp3";
-    private Uri mysong;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,9 +62,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         trashView = findViewById(R.id.trashView);
         Intent intent = getIntent();
-
-        if (intent.getStringExtra("transfer") != null)
-            mysong = Uri.parse(intent.getStringExtra("transfer"));
         myLocation = (MyLocation) intent.getSerializableExtra("MY_LOCATION");
 
         getLocationPermission();
@@ -95,25 +90,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
-            public void onMapLongClick(final LatLng latLng) {
-
-                AlertDialog.Builder mBuilder = new AlertDialog.Builder(MapsActivity.this);
-                View mView = getLayoutInflater().inflate(R.layout.dialog_add_mark, null);
-                final EditText editStationName = mView.findViewById(R.id.stationNameEdit);
-                final Button confirmStationName = mView.findViewById(R.id.stationNameConfirm);
-
-                mBuilder.setView(mView);
-                final AlertDialog dialog = mBuilder.create();
-                dialog.show();
-
-                confirmStationName.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Toast.makeText(MapsActivity.this, "Mark: " + String.valueOf(editStationName.getText()) + " successfully added to map", Toast.LENGTH_SHORT).show();
-                        addMarkOfStationToMap(latLng, new String(String.valueOf(editStationName.getText())));
-                        dialog.dismiss();
-                    }
-                });
+            public void onMapLongClick(LatLng latLng) {
+                showPointOfCreatingDialog(latLng);
             }
         });
 
@@ -139,6 +117,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d(TAG, "onMarkerDragStart");
                 trashView.setVisibility(View.VISIBLE);
                 projection = mMap.getProjection();
+                Log.d(Constants.TAG, "onMarkerDragStart: currentMarker position: lat = " + marker.getPosition().latitude + ", lng = " + marker.getPosition().longitude);
             }
 
             @Override
@@ -147,38 +126,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 LatLng latLngPosition = marker.getPosition();
                 android.graphics.Point screenPosition = projection.toScreenLocation(latLngPosition);
                 Log.d(TAG, "screen position of current marker = " + screenPosition);
+                Log.d(TAG, "maps position of current marker = " + marker.getPosition().toString());
             }
 
             @Override
             public void onMarkerDragEnd(Marker marker) {
                 Log.d(TAG, "onMarkerDragEnd");
-                LatLng latLngPosition = marker.getPosition();
-                android.graphics.Point screenPosition = projection.toScreenLocation(latLngPosition);
 
-                // Получение размеров экрана и элементов экрана
+                if (isAboveTrashZone(marker)) {
 
-                SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                        .findFragmentById(R.id.map);
+                    Point point = new Point(marker.getPosition().latitude, marker.getPosition().longitude, marker.getTitle());
+                    point.setId(marker.getId());
 
-                int height = mapFragment.getView().getHeight();
-
-                if (screenPosition.y > height - trashView.getHeight()) {
+                    myLocation.removePoint(point);
+                    marker.remove();
                     Toast.makeText(MapsActivity.this, "marker has been deleted", Toast.LENGTH_SHORT).show();
 
-                    myLocation.removePoint(new Point(marker.getPosition().latitude, marker.getPosition().longitude, marker.getTitle()));
-                    marker.remove();
+                    updateService();
 
-                    Intent intent = new Intent(MapsActivity.this, AlarmService.class);
-                    intent.putExtra("MY_LOCATION", myLocation);
-                    startService(intent);
                     save();
                     Log.d(TAG, "onMarkerDragEnd: marker has been deleted");
                 }
 
                 trashView.setVisibility(View.INVISIBLE);
-
-                Log.d(TAG, "onMarkerDragEnd: screen position of point is " + screenPosition.toString());
-                Log.d(TAG, "onMarkerDragEnd: screen height is " + height);
             }
         });
 
@@ -200,6 +170,53 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         load();
     }
 
+    private void showPointOfCreatingDialog(final LatLng latLng) {
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(MapsActivity.this);
+        View mView = getLayoutInflater().inflate(R.layout.dialog_add_mark, null);
+        final EditText editStationName = mView.findViewById(R.id.stationNameEdit);
+        final Button confirmStationName = mView.findViewById(R.id.stationNameConfirm);
+
+        mBuilder.setView(mView);
+        final AlertDialog dialog = mBuilder.create();
+        dialog.show();
+
+        confirmStationName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(MapsActivity.this, "Mark: " + String.valueOf(editStationName.getText()) + " successfully added to map", Toast.LENGTH_SHORT).show();
+                addPointToMap(latLng, new String(String.valueOf(editStationName.getText())));
+                dialog.dismiss();
+            }
+        });
+    }
+
+    private void updateService() {
+        Intent intent = new Intent(MapsActivity.this, AlarmService.class);
+        intent.putExtra("MY_LOCATION", myLocation);
+        startService(intent);
+    }
+
+    private boolean isAboveTrashZone(Marker marker) {
+
+        LatLng latLngPosition = marker.getPosition();
+        android.graphics.Point screenPosition = projection.toScreenLocation(latLngPosition);
+
+        // Получение размеров экрана и элементов экрана
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+
+        int height = mapFragment.getView().getHeight();
+
+        Log.d(TAG, "onMarkerDragEnd: screen position of point is " + screenPosition.toString());
+        Log.d(TAG, "onMarkerDragEnd: screen height is " + height);
+
+        if (screenPosition.y > height - trashView.getHeight())
+            return true;
+        else
+            return false;
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (Integer.parseInt(android.os.Build.VERSION.SDK) > 5
@@ -218,20 +235,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onBackPressed();
     }
 
-    public void addMarkOfStationToMap(LatLng position, String title) {
-        Log.d(TAG, "new point added to map: " + mMap + ", position: " + position);
+    public void addPointToMap(LatLng position, String title) {
+        Marker marker = createMarker(position, title);
+        moveAndZoomCamera(position, mMap.getCameraPosition().zoom);
 
-        createMarker(position, title);
+        Point point = new Point(position.latitude, position.longitude, title);
+        point.setId(marker.getId());
+        myLocation.addPoint(point);
 
-        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.builder()
-                .target(position)
-                .zoom(mMap.getCameraPosition().zoom)
-                .build()), 500, null);
-
-        myLocation.addPoint(new Point(position.latitude, position.longitude, title));
-        Intent intent = new Intent(this, AlarmService.class);
-        intent.putExtra("MY_LOCATION", myLocation);
-        startService(intent);
+        updateService();
         save();
     }
 
@@ -240,6 +252,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .position(position)
                 .title(name)
                 .draggable(true);
+        Log.d(TAG, "createMarker: new point added to map: " + mMap + ", position: " + position);
         return mMap.addMarker(markerOptions);
     }
 
@@ -304,7 +317,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             Log.d(TAG, "onComplete: location lat: " + currentLocation.getLatitude() + ", lng: " + currentLocation.getLongitude());
                             myLocation.setLocation(currentLocation);
                             Log.d(TAG, "onComplete: set location to myLocation");
-                            moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), 15f);
+                            moveAndZoomCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), 15f);
                         } else {
                             Log.d(TAG, "onComplete: current location is null");
                             Toast.makeText(MapsActivity.this, "unable to get current location", Toast.LENGTH_SHORT).show();
@@ -318,8 +331,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void moveCamera(LatLng latLng, float zoom) {
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+    private void moveAndZoomCamera(LatLng position, float zoom) {
+        int time = 500;
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.builder()
+                .target(position)
+                .zoom(zoom)
+                .build()), time, null);
     }
 
     private void readMarkers(String data) {
@@ -346,7 +363,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     System.err.print(e.getMessage());
                 }
 
-                addMarkOfStationToMap(new LatLng(latd, lngd), name);
+                addPointToMap(new LatLng(latd, lngd), name);
 
                 lat = "";
                 lng = "";
@@ -431,6 +448,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         try {
             out = openFileOutput(Constants.MARKERS_FILE_NAME, MODE_PRIVATE);
             Log.d(Constants.TAG, "The file was opened");
+            Log.d(Constants.TAG, data);
             out.write(data.getBytes());
             Toast.makeText(this, "The file was saved", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
