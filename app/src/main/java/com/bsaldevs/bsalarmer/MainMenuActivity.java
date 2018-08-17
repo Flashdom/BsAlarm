@@ -33,11 +33,6 @@ public class MainMenuActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isServicesOK()) {
-
-                    Intent service = new Intent(MainMenuActivity.this, AlarmService.class);
-                    service.putExtra("MY_LOCATION", myLocation);
-                    startService(service);
-
                     Intent maps = new Intent(MainMenuActivity.this, MapsActivity.class);
                     maps.putExtra("MY_LOCATION", myLocation);
                     startActivity(maps);

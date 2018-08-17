@@ -11,7 +11,7 @@ public class MyLocation implements Serializable{
 
     private double latitude;
     private double longitude;
-    private double radius = 0.001;
+    private double radius = 0.005;
     private List<Point> points;
 
     public MyLocation(double lat, double lng) {
@@ -47,25 +47,31 @@ public class MyLocation implements Serializable{
         Log.d(Constants.TAG, "notifyEveryone: points size is " + points.size());
 
         for (Point p : points) {
-            if (isOnTargetPlace(p))
+            if (isOnTargetPlace(p)) {
                 p.setArrived(true);
+            } else {
+                p.setArrived(false);
+            }
         }
     }
 
     public boolean isOnTargetPlace(Point p) {
 
-        Log.d(Constants.TAG, "isOnTargetPlace: myLocation lat " + latitude);
+        /*Log.d(Constants.TAG, "isOnTargetPlace: myLocation lat " + latitude);
         Log.d(Constants.TAG, "isOnTargetPlace: myLocation lng " + longitude);
         Log.d(Constants.TAG, "isOnTargetPlace: point lat " + p.getLat());
-        Log.d(Constants.TAG, "isOnTargetPlace: point lng " + p.getLng());
+        Log.d(Constants.TAG, "isOnTargetPlace: point lng " + p.getLng());*/
 
-        Log.d(Constants.TAG, "isOnTargetPlace: Math.abs(latitude + p.getLat()) = " + Math.abs(latitude + p.getLat()));
-        Log.d(Constants.TAG, "isOnTargetPlace: Math.abs(longitude + p.getLng()) = " + Math.abs(longitude + p.getLng()));
+        Log.d(Constants.TAG, "isOnTargetPlace: Math.abs(latitude - p.getLat()) = " + Math.abs(latitude - p.getLat()));
+        Log.d(Constants.TAG, "isOnTargetPlace: Math.abs(longitude - p.getLng()) = " + Math.abs(longitude - p.getLng()));
 
-        if (Math.abs(latitude + p.getLat()) < radius && Math.abs(longitude + p.getLng()) < radius)
+        if (Math.abs(latitude - p.getLat()) < radius && Math.abs(longitude - p.getLng()) < radius) {
+            Log.d(Constants.TAG, "point is arrived");
             return true;
-        else
+        } else {
+            Log.d(Constants.TAG, "point is unarrived");
             return false;
+        }
     }
 
     public void addPoint(Point point) {
@@ -94,13 +100,13 @@ public class MyLocation implements Serializable{
         return points;
     }
 
-    public boolean isAnyoneArrived() {
-
-        for (Point p : points) {
-            if (p.isArrived())
-                return true;
+    public Point getPointById(String id) {
+        for (Point point : points) {
+            if (point.getId().equals(id))
+                return point;
         }
 
-        return false;
+        return new Point(-1, -1, "error point");
     }
+
 }

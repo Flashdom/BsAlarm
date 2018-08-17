@@ -1,16 +1,24 @@
 package com.bsaldevs.bsalarmer;
+
 import java.io.Serializable;
 
 public class Point implements Serializable {
 
     private boolean arrived = false;
     private boolean chosen = false;
+
     private double radius = 0;
+
     private double lat = 0;
     private double lng = 0;
+    private String title = "";
+
     private String id = "";
 
-    private String title = "";
+    private boolean notifies = false;
+
+    private int notificationId = -1;
+
 
     public Point(double lat, double lng, String title) {
         this.lat = lat;
@@ -87,5 +95,26 @@ public class Point implements Serializable {
 
     public String getId() {
         return id;
+    }
+
+    public boolean isNotifies() {
+        return notifies;
+    }
+
+    public void setNotifies(boolean notifies) {
+        this.notifies = notifies;
+    }
+
+    public int getNotificationId() {
+        return notificationId;
+    }
+
+    public void setNotificationId(int notificationId) {
+        this.notificationId = notificationId;
+    }
+
+    public void setPosition(double latitude, double longitude) {
+        lat = latitude;
+        lng = longitude;
     }
 }

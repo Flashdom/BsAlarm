@@ -2,6 +2,7 @@ package com.bsaldevs.bsalarmer;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -92,6 +93,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onMapLongClick(LatLng latLng) {
                 showPointOfCreatingDialog(latLng);
+                updateService();
             }
         });
 
@@ -142,11 +144,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     marker.remove();
                     Toast.makeText(MapsActivity.this, "marker has been deleted", Toast.LENGTH_SHORT).show();
 
-                    updateService();
-
-                    save();
+                    Log.d(TAG, "onMarkerDragEnd: notif id = " + point.getNotificationId());
                     Log.d(TAG, "onMarkerDragEnd: marker has been deleted");
+                } else {
+                    Point point = myLocation.getPointById(marker.getId());
+                    point.setPosition(marker.getPosition().latitude, marker.getPosition().longitude);
+                    Log.d(TAG, "onMarkerDragEnd: notif id = " + point.getNotificationId());
                 }
+
+                updateService();
+
+                save();
 
                 trashView.setVisibility(View.INVISIBLE);
             }
@@ -184,14 +192,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 Toast.makeText(MapsActivity.this, "Mark: " + String.valueOf(editStationName.getText()) + " successfully added to map", Toast.LENGTH_SHORT).show();
-                addPointToMap(latLng, new String(String.valueOf(editStationName.getText())));
+                addAndSavePoint(latLng, new String(String.valueOf(editStationName.getText())));
                 dialog.dismiss();
             }
         });
     }
 
     private void updateService() {
+        PendingIntent pendingIntent;
         Intent intent = new Intent(MapsActivity.this, AlarmService.class);
+        pendingIntent = createPendingResult(11, intent, 0);
+        intent.putExtra("pendingIntent", pendingIntent);
         intent.putExtra("MY_LOCATION", myLocation);
         startService(intent);
     }
@@ -235,16 +246,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onBackPressed();
     }
 
-    public void addPointToMap(LatLng position, String title) {
+    public void addPoint(LatLng position, String title) {
         Marker marker = createMarker(position, title);
         moveAndZoomCamera(position, mMap.getCameraPosition().zoom);
 
         Point point = new Point(position.latitude, position.longitude, title);
         point.setId(marker.getId());
         myLocation.addPoint(point);
+    }
 
-        updateService();
+    public void addAndSavePoint(LatLng position, String title) {
+        addPoint(position, title);
         save();
+        updateService();
     }
 
     private Marker createMarker(LatLng position, String name) {
@@ -316,6 +330,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             Location currentLocation = (Location) task.getResult();
                             Log.d(TAG, "onComplete: location lat: " + currentLocation.getLatitude() + ", lng: " + currentLocation.getLongitude());
                             myLocation.setLocation(currentLocation);
+                            //TODO(need to fix bug with first mistake trigger (function notifyAll in MyLocation class);
+                            //updateService();
                             Log.d(TAG, "onComplete: set location to myLocation");
                             moveAndZoomCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), 15f);
                         } else {
@@ -337,6 +353,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .target(position)
                 .zoom(zoom)
                 .build()), time, null);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 11) {
+            myLocation = (MyLocation) data.getSerializableExtra("MY_LOCATION");
+            Log.d(Constants.TAG, "MapsActivity: onActivityResult: get myLocation");
+        }
     }
 
     private void readMarkers(String data) {
@@ -363,7 +388,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     System.err.print(e.getMessage());
                 }
 
-                addPointToMap(new LatLng(latd, lngd), name);
+                addPoint(new LatLng(latd, lngd), name);
 
                 lat = "";
                 lng = "";
@@ -437,6 +462,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
+        updateService();
     }
 
     private void save() {
