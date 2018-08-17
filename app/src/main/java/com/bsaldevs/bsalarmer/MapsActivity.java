@@ -64,6 +64,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         trashView = findViewById(R.id.trashView);
         Intent intent = getIntent();
         myLocation = (MyLocation) intent.getSerializableExtra("MY_LOCATION");
+        if (myLocation == null)
+            myLocation = new MyLocation();
 
         getLocationPermission();
         initMap();

@@ -36,10 +36,28 @@ public class AlarmService extends Service {
     private NotificationManager notificationManager;
     private boolean isAlarming = true;
     private PendingIntent pendingIntent;
+    private static Thread thread;
 
     @Override
     public void onCreate() {
         super.onCreate();
+
+        if (thread == null) {
+            thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (true) {
+                        try {
+                            Log.d(TAG, "thread in AlarmService is working");
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+            thread.start();
+        }
 
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -115,12 +133,14 @@ public class AlarmService extends Service {
 
         closeUnusedNotification();
 
-        return super.onStartCommand(intent, flags, startId);
+        return START_NOT_STICKY;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (mediaPlayer != null)
+            mediaPlayer.release();
         Log.d(TAG, "onDestroy");
     }
 
@@ -185,11 +205,11 @@ public class AlarmService extends Service {
             return;
         }
 
-        if (isAlarming) {
+        /*if (isAlarming) {
             mediaPlayer.stop();
             mediaPlayer.release();
             isAlarming = false;
-        }
+        }*/
 
         try {
             mediaPlayer = new MediaPlayer();
