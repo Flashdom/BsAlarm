@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.Point;
+import com.bsaldevs.bsalarmer.PseudoPoint;
 import com.bsaldevs.bsalarmer.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -247,7 +248,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Marker marker = createMarker(position, title);
         moveAndZoomCamera(position, mMap.getCameraPosition().zoom);
         double radius = 0;
-        Point point = new Point(position.latitude, position.longitude, radius, title, 2);
+        PseudoPoint point = new PseudoPoint(position.latitude, position.longitude, radius, title);
         addTarget(point, marker.getId());
     }
 
@@ -365,7 +366,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         sendBroadcast(location);
     }
 
-    private void addTarget(Point point, String bind) {
+    private void addTarget(PseudoPoint point, String bind) {
         Log.d(TAG, "addTarget");
         Intent location = new Intent(Constants.BROADCAST_ACTION)
                 .putExtra("task", TASK_ADD_TARGET_CODE)

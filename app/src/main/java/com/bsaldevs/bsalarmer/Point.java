@@ -1,5 +1,7 @@
 package com.bsaldevs.bsalarmer;
 
+import android.util.Log;
+
 import java.io.Serializable;
 
 public class Point implements Serializable {
@@ -18,6 +20,7 @@ public class Point implements Serializable {
         this.radius = 0;
         this.name = "";
         this.tag = tag;
+        Log.d("CDA", "Point created with tag = " + tag);
     }
 
     public Point(double latitude, double longitude, double radius, String name, int tag) {
@@ -27,15 +30,7 @@ public class Point implements Serializable {
         this.radius = radius;
         this.name = name;
         this.tag = tag;
-    }
-
-    public Point(double lat, double lng, double radius, String name) {
-        this.achieved = false;
-        this.latitude = lat;
-        this.longitude = lng;
-        this.radius = radius;
-        this.name = name;
-        this.tag = -1;
+        Log.d("CDA", "Point created with tag = " + tag);
     }
 
     public boolean isAchieved() {
@@ -85,6 +80,7 @@ public class Point implements Serializable {
 
     public void setTag(int tag) {
         this.tag = tag;
+        Log.d("CDA", "setTag " + tag);
     }
 
     public int getTag() {

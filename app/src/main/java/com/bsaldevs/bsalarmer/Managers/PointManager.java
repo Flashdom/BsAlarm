@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.Point;
+import com.bsaldevs.bsalarmer.PseudoPoint;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -31,18 +32,16 @@ public class PointManager implements Serializable{
         pointTag = points.size();
     }
 
-    public void addAll(List<Point> list, List<String> binds) {
-        Log.d(TAG, "PointManager: addAll");
+    public void createAll(List<PseudoPoint> list, List<String> binds) {
+        Log.d(TAG, "PointManager: createAll");
         for (int i = 0; i < list.size(); i++) {
-            add(list.get(i), binds.get(i));
+            createPoint(list.get(i), binds.get(i));
         }
     }
 
-    public void add(Point point, String bind) {
+    public void createPoint(PseudoPoint pPoint, String bind) {
         Log.d(TAG, "PointManager: add: point bind = " + bind);
-        if (point.getTag() == -1)
-            point.setTag(pointTag++);
-        points.add(point);
+        points.add(new Point(pPoint.getLatitude(), pPoint.getLongitude(), pPoint.getRadius(), pPoint.getName(), pointTag++));
         binds.add(bind);
         save();
     }
@@ -80,7 +79,7 @@ public class PointManager implements Serializable{
     }
 
     public Point getPointByBind(String bind) {
-        Point point = new Point(pointTag++);
+        Point point = null;
         for (int i = 0; i < binds.size(); i++) {
             if (binds.get(i).equals(bind)) {
                 point = points.get(i);
@@ -90,27 +89,15 @@ public class PointManager implements Serializable{
         return point;
     }
 
-    private void updateBinds() {
-
-    }
-
-    private void removeBind() {
-
-    }
-
-    private void addBind() {
-
-    }
-
     private void load() {
         Log.d(TAG, "PointManager: load");
         cacheManager.load();
-        List<Point> mPoints = cacheManager.parsePoints();
+        List<PseudoPoint> mPoints = cacheManager.parsePoints();
         List<String> fakeBinds = new ArrayList<>();
         for (int i = 0; i < mPoints.size(); i++) {
             fakeBinds.add("m" + i);
         }
-        addAll(mPoints, fakeBinds);
+        createAll(mPoints, fakeBinds);
         seeAllPointBinds();
     }
 

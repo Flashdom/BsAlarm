@@ -13,6 +13,7 @@ import android.util.Log;
 import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.MyLocationManager;
 import com.bsaldevs.bsalarmer.Point;
+import com.bsaldevs.bsalarmer.PseudoPoint;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -75,7 +76,7 @@ public class LocationService extends Service {
             int task = intent.getIntExtra("task", 0);
             Log.d(TAG, "LocationService: onReceive: task code " + task);
             if (task == ADD_TARGET_CODE) {
-                Point point = (Point) intent.getSerializableExtra("point");
+                PseudoPoint point = (PseudoPoint) intent.getSerializableExtra("point");
                 String bind = intent.getStringExtra("bind");
                 myLocationManager.addTarget(point, bind);
                 Point target = myLocationManager.getTargetByBind(bind);

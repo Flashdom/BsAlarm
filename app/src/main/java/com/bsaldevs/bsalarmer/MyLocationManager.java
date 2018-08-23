@@ -76,9 +76,9 @@ public class MyLocationManager implements Serializable {
         pointManager.remove(bind);
     }
 
-    public void addTarget(Point point, String bind) {
-        pointManager.add(point, bind);
-        checkIsTargetReached(point);
+    public void addTarget(PseudoPoint pPoint, String bind) {
+        pointManager.createPoint(pPoint, bind);
+        checkIsTargetReached(pointManager.getPointByBind(bind));
     }
 
     public void setTargetPosition(String bind, double lat, double lng) {
