@@ -65,7 +65,7 @@ public class MyLocation implements Serializable{
         Log.d(Constants.TAG, "isOnTargetPlace: Math.abs(latitude - p.getLat()) = " + Math.abs(latitude - p.getLat()));
         Log.d(Constants.TAG, "isOnTargetPlace: Math.abs(longitude - p.getLng()) = " + Math.abs(longitude - p.getLng()));
 
-        if (Math.abs(latitude - p.getLat()) < radius && Math.abs(longitude - p.getLng()) < radius) {
+        if (Math.sqrt(Math.pow((p.getLat()-latitude),2)+Math.pow((p.getLng()-longitude),2))<radius) {
             Log.d(Constants.TAG, "point is arrived");
             return true;
         } else {

@@ -1,9 +1,11 @@
 package com.bsaldevs.bsalarmer;
 
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -18,6 +20,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.WindowManager;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -32,12 +36,14 @@ public class AlarmService extends Service {
     private Uri song;
     private MediaPlayer mediaPlayer;
     private LocationManager locationManager;
+    private boolean ID;
     private MyLocation myLocation;
     private NotificationManager notificationManager;
     private boolean isAlarming = true;
     private PendingIntent pendingIntent;
     private static Thread thread;
 
+    private int requestCodeForAlarming;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -133,14 +139,14 @@ public class AlarmService extends Service {
 
         closeUnusedNotification();
 
-        return START_NOT_STICKY;
+
+
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mediaPlayer != null)
-            mediaPlayer.release();
         Log.d(TAG, "onDestroy");
     }
 
@@ -205,11 +211,11 @@ public class AlarmService extends Service {
             return;
         }
 
-        /*if (isAlarming) {
+        if (isAlarming) {
             mediaPlayer.stop();
             mediaPlayer.release();
             isAlarming = false;
-        }*/
+        }
 
         try {
             mediaPlayer = new MediaPlayer();
