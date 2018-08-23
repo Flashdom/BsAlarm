@@ -1,12 +1,13 @@
-package com.bsaldevs.bsalarmer;
+package com.bsaldevs.bsalarmer.Activities;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
@@ -20,6 +21,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bsaldevs.bsalarmer.Constants;
+import com.bsaldevs.bsalarmer.Point;
+import com.bsaldevs.bsalarmer.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -34,10 +38,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -47,14 +50,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String TAG = Constants.TAG;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
 
+    private static final int TASK_ADD_TARGET_CODE = 100;
+    private static final int TASK_REMOVE_TARGET_CODE = 101;
+    private static final int TASK_CHANGE_LOCATION_CODE = 102;
+    private static final int TASK_SET_LOCATION_CODE = 103;
+
+    private static final int TASK_GET_TARGETS_CODE = 200;
+    private static final int TASK_ON_MAP_READY_CODE = 201;
+
+    private BroadcastReceiver receiver;
+
     private Boolean locationPermissionGranted = false;
 
     private Projection projection;
     private ImageView trashView;
-    private MyLocation myLocation;
-
-    final String DATA_SD = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
-            + "/music.mp3";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,13 +71,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps);
 
         trashView = findViewById(R.id.trashView);
-        Intent intent = getIntent();
-        myLocation = (MyLocation) intent.getSerializableExtra("MY_LOCATION");
-        if (myLocation == null)
-            myLocation = new MyLocation();
+        receiver = new MyReceiver();
+
+        IntentFilter intentFilter = new IntentFilter(Constants.MAPS_ACTION);
+        registerReceiver(receiver, intentFilter);
 
         getLocationPermission();
         initMap();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(receiver);
     }
 
     @Override
@@ -91,11 +106,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.d(TAG, "onMapReady: locationPermissionGranted is false");
         }
 
+        sendOnMapReady();
+
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng latLng) {
                 showPointOfCreatingDialog(latLng);
-                updateService();
             }
         });
 
@@ -116,6 +132,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
         mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+
             @Override
             public void onMarkerDragStart(Marker marker) {
                 Log.d(TAG, "onMarkerDragStart");
@@ -138,25 +155,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d(TAG, "onMarkerDragEnd");
 
                 if (isAboveTrashZone(marker)) {
-
-                    Point point = new Point(marker.getPosition().latitude, marker.getPosition().longitude, marker.getTitle());
-                    point.setId(marker.getId());
-
-                    myLocation.removePoint(point);
+                    removeTarget(marker.getId());
                     marker.remove();
                     Toast.makeText(MapsActivity.this, "marker has been deleted", Toast.LENGTH_SHORT).show();
 
-                    Log.d(TAG, "onMarkerDragEnd: notif id = " + point.getNotificationId());
                     Log.d(TAG, "onMarkerDragEnd: marker has been deleted");
                 } else {
-                    Point point = myLocation.getPointById(marker.getId());
-                    point.setPosition(marker.getPosition().latitude, marker.getPosition().longitude);
-                    Log.d(TAG, "onMarkerDragEnd: notif id = " + point.getNotificationId());
+                    changeTargetPosition(marker.getPosition().latitude, marker.getPosition().longitude, marker.getId());
                 }
-
-                updateService();
-
-                save();
 
                 trashView.setVisibility(View.INVISIBLE);
             }
@@ -176,8 +182,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(MapsActivity.this, "onInfoWindowClick", Toast.LENGTH_SHORT).show();
             }
         });
-
-        load();
     }
 
     private void showPointOfCreatingDialog(final LatLng latLng) {
@@ -194,19 +198,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 Toast.makeText(MapsActivity.this, "Mark: " + String.valueOf(editStationName.getText()) + " successfully added to map", Toast.LENGTH_SHORT).show();
-                addAndSavePoint(latLng, new String(String.valueOf(editStationName.getText())));
+                addPoint(latLng, new String(String.valueOf(editStationName.getText())));
                 dialog.dismiss();
             }
         });
-    }
-
-    private void updateService() {
-        PendingIntent pendingIntent;
-        Intent intent = new Intent(MapsActivity.this, AlarmService.class);
-        pendingIntent = createPendingResult(11, intent, 0);
-        intent.putExtra("pendingIntent", pendingIntent);
-        intent.putExtra("MY_LOCATION", myLocation);
-        startService(intent);
     }
 
     private boolean isAboveTrashZone(Marker marker) {
@@ -251,16 +246,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void addPoint(LatLng position, String title) {
         Marker marker = createMarker(position, title);
         moveAndZoomCamera(position, mMap.getCameraPosition().zoom);
-
-        Point point = new Point(position.latitude, position.longitude, title);
-        point.setId(marker.getId());
-        myLocation.addPoint(point);
+        double radius = 0;
+        Point point = new Point(position.latitude, position.longitude, radius, title, 2);
+        addTarget(point, marker.getId());
     }
 
-    public void addAndSavePoint(LatLng position, String title) {
-        addPoint(position, title);
-        save();
-        updateService();
+    public void addPointWithoutSending(LatLng position, String title) {
+        createMarker(position, title);
+        moveAndZoomCamera(position, mMap.getCameraPosition().zoom);
     }
 
     private Marker createMarker(LatLng position, String name) {
@@ -329,12 +322,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         Log.d(TAG, "getDeviceLocation: onComplete");
                         if (task.isSuccessful() && (task.getResult() != null)) {
                             Log.d(TAG, "onComplete: found location!");
-                            Location currentLocation = (Location) task.getResult();
+                            Location currentLocation = task.getResult();
                             Log.d(TAG, "onComplete: location lat: " + currentLocation.getLatitude() + ", lng: " + currentLocation.getLongitude());
-                            myLocation.setLocation(currentLocation);
-                            //TODO(need to fix bug with first mistake trigger (function notifyAll in MyLocation class);
-                            //updateService();
-                            Log.d(TAG, "onComplete: set location to myLocation");
+                            sendNewLocationToLocationService(currentLocation.getLatitude(), currentLocation.getLongitude());
+                            Log.d(TAG, "onComplete: success set location");
                             moveAndZoomCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), 15f);
                         } else {
                             Log.d(TAG, "onComplete: current location is null");
@@ -361,136 +352,65 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 11) {
-            myLocation = (MyLocation) data.getSerializableExtra("MY_LOCATION");
-            Log.d(Constants.TAG, "MapsActivity: onActivityResult: get myLocation");
+            Log.d(Constants.TAG, "MapsActivity: onActivityResult: request code 11");
         }
     }
 
-    private void readMarkers(String data) {
+    private void sendNewLocationToLocationService(double lat, double lng) {
+        Log.d(TAG, "sendNewLocationToLocationService");
+        Intent location = new Intent(Constants.BROADCAST_ACTION)
+                .putExtra("task", TASK_SET_LOCATION_CODE)
+                .putExtra("lat", lat)
+                .putExtra("lng", lng);
+        sendBroadcast(location);
+    }
 
-        String lat = "";
-        String lng = "";
-        String name = "";
+    private void addTarget(Point point, String bind) {
+        Log.d(TAG, "addTarget");
+        Intent location = new Intent(Constants.BROADCAST_ACTION)
+                .putExtra("task", TASK_ADD_TARGET_CODE)
+                .putExtra("point", point)
+                .putExtra("bind", bind);
+        sendBroadcast(location);
+    }
 
-        boolean isLat = true;
-        boolean isPosition = true;
-        int count = 0;
+    private void removeTarget(String bind) {
+        Log.d(TAG, "removeTarget");
+        Intent location = new Intent(Constants.BROADCAST_ACTION)
+                .putExtra("task", TASK_REMOVE_TARGET_CODE)
+                .putExtra("bind", bind);
+        sendBroadcast(location);
+    }
 
-        for (int i = 0; i < data.length(); i++) {
+    private void changeTargetPosition(double lat, double lng, String bind) {
+        Log.d(TAG, "changeTargetPosition");
+        Intent location = new Intent(Constants.BROADCAST_ACTION)
+                .putExtra("task", TASK_CHANGE_LOCATION_CODE)
+                .putExtra("lat", lat)
+                .putExtra("lng", lng)
+                .putExtra("bind", bind);
+        sendBroadcast(location);
+    }
 
-            if (data.charAt(i) == '\n') {
+    private void sendOnMapReady() {
+        Log.d(TAG, "sendOnMapReady");
+        Intent location = new Intent(Constants.BROADCAST_ACTION)
+                .putExtra("task", TASK_ON_MAP_READY_CODE);
+        sendBroadcast(location);
+    }
 
-                double latd = 0;
-                double lngd = 0;
-
-                try {
-                    latd = Double.parseDouble(lat);
-                    lngd = Double.parseDouble(lng);
-                } catch (Exception e) {
-                    System.err.print(e.getMessage());
+    private class MyReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int task = intent.getIntExtra("task", 0);
+            Log.d(TAG, "MapsActivity: onReceive: task code " + task);
+            if (task == TASK_GET_TARGETS_CODE) {
+                List<Point> points = (ArrayList<Point>) intent.getSerializableExtra("points");
+                for (Point point : points) {
+                    addPointWithoutSending(new LatLng(point.getLatitude(), point.getLongitude()), point.getName());
                 }
-
-                addPoint(new LatLng(latd, lngd), name);
-
-                lat = "";
-                lng = "";
-                name = "";
-                count = 0;
-                isLat = true;
-                isPosition = true;
-
-                continue;
-            }
-
-            if (data.charAt(i) == ';') {
-                count++;
-                if (count == 1)
-                    isLat = false;
-                if (count == 2)
-                    isPosition = false;
-                continue;
-            }
-
-            if (isPosition) {
-                if (isLat)
-                    lat += data.charAt(i);
-                else
-                    lng += data.charAt(i);
-            } else {
-                name += data.charAt(i);
             }
         }
     }
 
-    private String writeMarkers() {
-        String data = "";
-        for (Point point : myLocation.getPoints()) {
-            data += point.getLat();
-            data += ";";
-            data += point.getLng();
-            data += ";";
-            data += point.getTitle();
-            data += "\n";
-        }
-        return data;
-    }
-
-    private void load() {
-        Log.d(Constants.TAG, "loading user data from file: " + Constants.MARKERS_FILE_NAME);
-        FileInputStream in = null;
-
-        try {
-            in = openFileInput(Constants.MARKERS_FILE_NAME);
-            byte[] bytes = new byte[in.available()];
-            in.read(bytes);
-            String text = new String(bytes);
-
-            Log.d(TAG, "file length is " + text.length());
-            Log.d(TAG, text);
-
-            readMarkers(text);
-            Toast.makeText(this, "The file was loaded", Toast.LENGTH_SHORT).show();
-        }
-        catch (IOException e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-
-        finally {
-            try {
-                if (in != null)
-                    in.close();
-            }
-            catch(IOException e) {
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        }
-        updateService();
-    }
-
-    private void save() {
-        Log.d(Constants.TAG, "saving user data to file: " + Constants.MARKERS_FILE_NAME);
-        FileOutputStream out = null;
-
-        String data = writeMarkers();
-
-        try {
-            out = openFileOutput(Constants.MARKERS_FILE_NAME, MODE_PRIVATE);
-            Log.d(Constants.TAG, "The file was opened");
-            Log.d(Constants.TAG, data);
-            out.write(data.getBytes());
-            Toast.makeText(this, "The file was saved", Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-        finally {
-            try {
-                if (out != null) {
-                    out.close();
-                    Log.d(Constants.TAG, "The file was closed");
-                }
-            } catch (IOException e) {
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
 }

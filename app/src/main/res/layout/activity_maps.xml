@@ -10,7 +10,7 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="com.bsaldevs.bsalarmer.MapsActivity"></fragment>
+        tools:context="com.bsaldevs.bsalarmer.Activities.MapsActivity"></fragment>
 
     <ImageView
         android:id="@+id/trashView"

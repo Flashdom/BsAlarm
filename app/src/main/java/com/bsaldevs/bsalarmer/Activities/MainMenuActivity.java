@@ -1,7 +1,8 @@
-package com.bsaldevs.bsalarmer;
+package com.bsaldevs.bsalarmer.Activities;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,6 +10,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.bsaldevs.bsalarmer.Constants;
+import com.bsaldevs.bsalarmer.R;
+import com.bsaldevs.bsalarmer.Services.AlarmService;
+import com.bsaldevs.bsalarmer.Services.MainService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
@@ -16,16 +21,18 @@ public class MainMenuActivity extends AppCompatActivity {
 
     private Button b1;
     private Button b2;
-    private MyLocation myLocation;
 
-    public static final int requestCodeForSongChoose = 222;
+    private static final int requestCodeForSongChoose = 222;
     private static final int ERROR_DIALOG_REQUEST = 9001;
+
+    private String song;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-        myLocation = new MyLocation();
+
+        song = "";
 
         b1 = findViewById(R.id.button);
 
@@ -33,8 +40,8 @@ public class MainMenuActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isServicesOK()) {
+                    startMainService();
                     Intent maps = new Intent(MainMenuActivity.this, MapsActivity.class);
-                    maps.putExtra("MY_LOCATION", myLocation);
                     startActivity(maps);
                 }
             }
@@ -56,7 +63,7 @@ public class MainMenuActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if ((requestCode == requestCodeForSongChoose) && (resultCode == RESULT_OK ) && (data!=null)) {
-            Constants.SOUND_URI = data.getData();
+            song = data.getData().toString();
         }
     }
 
@@ -76,5 +83,12 @@ public class MainMenuActivity extends AppCompatActivity {
             Toast.makeText(this, "We can't make map request", Toast.LENGTH_SHORT).show();
         }
         return false;
+    }
+
+    public void startMainService() {
+        Log.d(Constants.TAG, "startMainService");
+        Intent mainService = new Intent(this, MainService.class);
+        mainService.putExtra("song", song);
+        startService(mainService);
     }
 }
