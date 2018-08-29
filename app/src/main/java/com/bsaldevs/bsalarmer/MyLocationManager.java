@@ -1,6 +1,5 @@
 package com.bsaldevs.bsalarmer;
 
-import android.*;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,18 +12,15 @@ import android.util.Log;
 
 import com.bsaldevs.bsalarmer.Managers.PointManager;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by azatiSea on 21.08.2018.
  */
 
-public class MyLocationManager implements Serializable {
+public class MyLocationManager {
 
     private static final String TAG = Constants.TAG;
-    private static final int TASK_CLOSE_NOTIFICATION_CODE = 300;
-    private static final int TASK_CREATE_NOTIFICATION_CODE = 301;
 
     private Context context;
     private MyLocation myLocation;
@@ -40,7 +36,7 @@ public class MyLocationManager implements Serializable {
                 && ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, new LocationListener() {
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5, new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 Log.d(TAG, "onLocationChanged");
@@ -76,14 +72,9 @@ public class MyLocationManager implements Serializable {
         pointManager.remove(bind);
     }
 
-    public void addTarget(PseudoPoint pPoint, String bind) {
+    public void addTarget(PointDataContainer pPoint, String bind) {
         pointManager.createPoint(pPoint, bind);
         checkIsTargetReached(pointManager.getPointByBind(bind));
-    }
-
-    public void setTargetPosition(String bind, double lat, double lng) {
-        pointManager.setPointPositionByBind(bind, lat, lng);
-        checkIsTargetReached(getTargetByBind(bind));
     }
 
     public List<Point> getTargets() {
@@ -114,7 +105,8 @@ public class MyLocationManager implements Serializable {
 
         if (reached != target.isAchieved()) {
             target.setAchieved(reached);
-            sendChangedStateOfPoint(target, reached);
+            if (target.isActive())
+                sendChangedStateOfPoint(target, reached);
         }
     }
 
@@ -127,16 +119,22 @@ public class MyLocationManager implements Serializable {
 
     private void sendChangedStateOfPoint(Point point, boolean reached) {
         Log.d(TAG, "sendChangedStateOfPoint");
-        Intent alarm = new Intent(Constants.NOTIFICATION_ACTION)
+
+        Intent notification = new Intent(Constants.NOTIFICATION_ACTION)
                 .putExtra("point", point);
         if (reached) {
             Log.d(TAG, "sendChangedStateOfPoint: create notification");
-            alarm.putExtra("task", TASK_CREATE_NOTIFICATION_CODE);
+            notification.putExtra("task", BroadcastActions.CREATE_NOTIFICATION);
         }
         else {
             Log.d(TAG, "sendChangedStateOfPoint: close notification");
-            alarm.putExtra("task", TASK_CLOSE_NOTIFICATION_CODE);
+            notification.putExtra("task", BroadcastActions.CLOSE_NOTIFICATION);
         }
-        context.sendBroadcast(alarm);
+        context.sendBroadcast(notification);
+    }
+
+    public void changeTarget(String bind, PointDataContainer pseudoPoint) {
+        pointManager.changePointByBind(bind, pseudoPoint);
+        checkIsTargetReached(getTargetByBind(bind));
     }
 }

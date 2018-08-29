@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -15,6 +16,8 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
+
+import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.MyLocationManager;
 import com.bsaldevs.bsalarmer.Point;
@@ -32,7 +35,6 @@ public class AlarmService extends Service {
     private MediaPlayer mediaPlayer;
     private boolean isAlarming = false;
 
-    private ExecutorService executorService;
     private BroadcastReceiver receiver;
 
     @Override
@@ -41,17 +43,23 @@ public class AlarmService extends Service {
 
         Log.d(TAG, "AlarmService: onCreate");
 
-        executorService = Executors.newFixedThreadPool(2);
         mediaPlayer = new MediaPlayer();
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                int response = intent.getIntExtra("response", -1);
-                if (response == 1) {
-                    //TODO(Alarming)
+
+                int task = intent.getIntExtra("task", -1);
+                Log.d(TAG, "AlarmService: onReceive: task code " + task);
+                if (task == BroadcastActions.ALARM) {
+                    alarm();
+                } else if (task == BroadcastActions.SET_SONG) {
+                    song = Uri.parse(intent.getStringExtra("song"));
                 }
             }
         };
+
+        IntentFilter intentFilter = new IntentFilter(Constants.ALARM_ACTION);
+        registerReceiver(receiver, intentFilter);
     }
 
     @Nullable
@@ -64,10 +72,6 @@ public class AlarmService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         Log.d(TAG, "onStartCommand");
-
-        int param = intent.getIntExtra("location manager", 0);
-        MyRun myRun = new MyRun(startId, param);
-        executorService.execute(myRun);
 
         song = Uri.parse(intent.getStringExtra("song"));
 
@@ -82,9 +86,8 @@ public class AlarmService extends Service {
         Log.d(TAG, "onDestroy");
     }
 
-    private void alarm(Point point) {
+    private void alarm() {
         Log.d(TAG, "start alarming");
-        createNotification(point);
         if (isAlarming)
             return;
         isAlarming = true;
@@ -128,10 +131,6 @@ public class AlarmService extends Service {
         isAlarming = false;
     }
 
-    private void createNotification(Point point) { //TODO(Rename this method)
-
-    }
-
     class MyRun implements Runnable {
 
         int startId;
@@ -146,9 +145,6 @@ public class AlarmService extends Service {
         @Override
         public void run() {
             Log.d(TAG, "myRun started with param = " + param);
-            Intent intent = new Intent(Constants.BROADCAST_ACTION);
-            intent.putExtra("update", 1);
-            sendBroadcast(intent);
             stopSelfResult(startId);
         }
     }

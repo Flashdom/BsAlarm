@@ -15,16 +15,20 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.Point;
-import com.bsaldevs.bsalarmer.PseudoPoint;
+import com.bsaldevs.bsalarmer.PointDataContainer;
 import com.bsaldevs.bsalarmer.R;
+import com.bsaldevs.bsalarmer.Utils;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -39,7 +43,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,14 +53,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private String TAG = Constants.TAG;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
-
-    private static final int TASK_ADD_TARGET_CODE = 100;
-    private static final int TASK_REMOVE_TARGET_CODE = 101;
-    private static final int TASK_CHANGE_LOCATION_CODE = 102;
-    private static final int TASK_SET_LOCATION_CODE = 103;
-
-    private static final int TASK_GET_TARGETS_CODE = 200;
-    private static final int TASK_ON_MAP_READY_CODE = 201;
 
     private BroadcastReceiver receiver;
 
@@ -79,6 +74,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         getLocationPermission();
         initMap();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.maps_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_point_list) {
+            Intent openPointList = new Intent(MapsActivity.this, PointListActivity.class);
+            startActivity(openPointList);
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -125,8 +138,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
-            public boolean onMarkerClick(Marker marker) {
+            public boolean onMarkerClick(final Marker marker) {
                 Log.d(TAG, "onMarkerClick");
+                if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+                Task location = fusedLocationProviderClient.getLastLocation();
+                location.addOnCompleteListener(new OnCompleteListener<Location>() {
+                    @Override
+                    public void onComplete(@NonNull com.google.android.gms.tasks.Task<Location> task) {
+                        Log.d(TAG, "getDeviceLocation: onComplete");
+                        if (task.isSuccessful() && (task.getResult() != null)) {
+                            Log.d(TAG, "onComplete: found location!");
+                            Location currentLocation = task.getResult();
+                            LatLng myLocation = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                            Toast.makeText(MapsActivity.this, "" + Utils.CalculateDistanceBetween(marker.getPosition(), myLocation), Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.d(TAG, "onComplete: current location is null");
+                            Toast.makeText(MapsActivity.this, "unable to get current location", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
                 marker.showInfoWindow();
                 return false;
             }
@@ -162,7 +195,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     Log.d(TAG, "onMarkerDragEnd: marker has been deleted");
                 } else {
-                    changeTargetPosition(marker.getPosition().latitude, marker.getPosition().longitude, marker.getId());
+
+                    double lat = marker.getPosition().latitude;
+                    double lng = marker.getPosition().longitude;
+
+                    PointDataContainer pseudoPoint = new PointDataContainer(lat, lng, 0, "");
+                    changeTarget(pseudoPoint, marker.getId());
                 }
 
                 trashView.setVisibility(View.INVISIBLE);
@@ -248,7 +286,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Marker marker = createMarker(position, title);
         moveAndZoomCamera(position, mMap.getCameraPosition().zoom);
         double radius = 0;
-        PseudoPoint point = new PseudoPoint(position.latitude, position.longitude, radius, title);
+        PointDataContainer point = new PointDataContainer(position.latitude, position.longitude, radius, title);
         addTarget(point, marker.getId());
     }
 
@@ -360,16 +398,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void sendNewLocationToLocationService(double lat, double lng) {
         Log.d(TAG, "sendNewLocationToLocationService");
         Intent location = new Intent(Constants.BROADCAST_ACTION)
-                .putExtra("task", TASK_SET_LOCATION_CODE)
+                .putExtra("task", BroadcastActions.SET_USER_LOCATION)
                 .putExtra("lat", lat)
                 .putExtra("lng", lng);
         sendBroadcast(location);
     }
 
-    private void addTarget(PseudoPoint point, String bind) {
+    private void addTarget(PointDataContainer point, String bind) {
         Log.d(TAG, "addTarget");
-        Intent location = new Intent(Constants.BROADCAST_ACTION)
-                .putExtra("task", TASK_ADD_TARGET_CODE)
+        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
+                .putExtra("task", BroadcastActions.ADD_TARGET)
                 .putExtra("point", point)
                 .putExtra("bind", bind);
         sendBroadcast(location);
@@ -377,26 +415,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void removeTarget(String bind) {
         Log.d(TAG, "removeTarget");
-        Intent location = new Intent(Constants.BROADCAST_ACTION)
-                .putExtra("task", TASK_REMOVE_TARGET_CODE)
+        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
+                .putExtra("task", BroadcastActions.REMOVE_TARGET)
                 .putExtra("bind", bind);
         sendBroadcast(location);
     }
 
-    private void changeTargetPosition(double lat, double lng, String bind) {
+    private void changeTarget(PointDataContainer pseudoPoint, String bind) {
         Log.d(TAG, "changeTargetPosition");
-        Intent location = new Intent(Constants.BROADCAST_ACTION)
-                .putExtra("task", TASK_CHANGE_LOCATION_CODE)
-                .putExtra("lat", lat)
-                .putExtra("lng", lng)
+        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
+                .putExtra("task", BroadcastActions.CHANGE_TARGET)
+                .putExtra("pseudoPoint", pseudoPoint)
                 .putExtra("bind", bind);
         sendBroadcast(location);
     }
 
     private void sendOnMapReady() {
         Log.d(TAG, "sendOnMapReady");
-        Intent location = new Intent(Constants.BROADCAST_ACTION)
-                .putExtra("task", TASK_ON_MAP_READY_CODE);
+        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
+                .putExtra("task", BroadcastActions.GET_TARGETS)
+                .putExtra("sender", "mapsActivity");
         sendBroadcast(location);
     }
 
@@ -405,7 +443,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         public void onReceive(Context context, Intent intent) {
             int task = intent.getIntExtra("task", 0);
             Log.d(TAG, "MapsActivity: onReceive: task code " + task);
-            if (task == TASK_GET_TARGETS_CODE) {
+            if (task == BroadcastActions.GET_TARGETS) {
                 List<Point> points = (ArrayList<Point>) intent.getSerializableExtra("points");
                 for (Point point : points) {
                     addPointWithoutSending(new LatLng(point.getLatitude(), point.getLongitude()), point.getName());
@@ -413,5 +451,4 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
     }
-
 }

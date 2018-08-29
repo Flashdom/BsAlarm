@@ -2,10 +2,7 @@ package com.bsaldevs.bsalarmer.Services;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -19,9 +16,6 @@ import com.bsaldevs.bsalarmer.Constants;
 public class MainService extends Service {
 
     private BroadcastReceiver receiver;
-    private static final String UPDATE = "update";
-
-    private static final int UPDATE_CODE = 1;
 
     @Nullable
     @Override
@@ -48,12 +42,10 @@ public class MainService extends Service {
                 .putExtra("song", song);
         startService(alarm);
 
-        Intent notification = new Intent(this, NotificationService.class)
-                .putExtra("location manager", 7);
+        Intent notification = new Intent(this, NotificationService.class);
         startService(notification);
 
-        Intent location = new Intent(this, LocationService.class)
-                .putExtra("location manager", 7);
+        Intent location = new Intent(this, LocationManagerService.class);
         startService(location);
 
         return START_NOT_STICKY;

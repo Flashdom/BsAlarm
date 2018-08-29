@@ -6,7 +6,7 @@ import android.widget.Toast;
 
 import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.Point;
-import com.bsaldevs.bsalarmer.PseudoPoint;
+import com.bsaldevs.bsalarmer.PointDataContainer;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -34,9 +34,9 @@ public class CacheManager implements Serializable {
         buffer = "";
     }
 
-    public List<PseudoPoint> parsePoints() {
+    public List<PointDataContainer> parsePoints() {
 
-        List<PseudoPoint> pseudoPoints = new ArrayList<>();
+        List<PointDataContainer> pseudoPoints = new ArrayList<>();
 
         Log.d(TAG, "CacheManager: parsePoints");
 
@@ -65,7 +65,7 @@ public class CacheManager implements Serializable {
                     System.err.print(e.getMessage());
                 }
 
-                pseudoPoints.add(new PseudoPoint(latd, lngd, radiusd, name));
+                pseudoPoints.add(new PointDataContainer(latd, lngd, radiusd, name));
 
                 lat = "";
                 lng = "";

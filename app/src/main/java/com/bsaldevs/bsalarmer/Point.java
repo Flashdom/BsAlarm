@@ -7,21 +7,12 @@ import java.io.Serializable;
 public class Point implements Serializable {
 
     private boolean achieved = false;
+    private boolean active = true;
     private double radius = 0;
     private double latitude = 0;
     private double longitude = 0;
     private String name = "";
     private int tag = 0;
-
-    public Point(int tag) {
-        this.achieved = false;
-        this.latitude = 0;
-        this.longitude = 0;
-        this.radius = 0;
-        this.name = "";
-        this.tag = tag;
-        Log.d("CDA", "Point created with tag = " + tag);
-    }
 
     public Point(double latitude, double longitude, double radius, String name, int tag) {
         this.achieved = false;
@@ -30,6 +21,7 @@ public class Point implements Serializable {
         this.radius = radius;
         this.name = name;
         this.tag = tag;
+        this.active = true;
         Log.d("CDA", "Point created with tag = " + tag);
     }
 
@@ -85,6 +77,14 @@ public class Point implements Serializable {
 
     public int getTag() {
         return tag;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     @Override

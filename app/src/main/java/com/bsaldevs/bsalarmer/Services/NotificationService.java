@@ -19,6 +19,7 @@ import android.util.Log;
 
 import com.bsaldevs.bsalarmer.Activities.MapsActivity;
 import com.bsaldevs.bsalarmer.AssociatedNotificationList;
+import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.Point;
 import com.bsaldevs.bsalarmer.R;
@@ -39,9 +40,6 @@ public class NotificationService extends Service {
 
     private AssociatedNotificationList notifications;
     private BroadcastReceiver receiver;
-
-    private static final int TASK_CLOSE_NOTIFICATION_CODE = 300;
-    private static final int TASK_CREATE_NOTIFICATION_CODE = 301;
 
     @Nullable
     @Override
@@ -82,7 +80,7 @@ public class NotificationService extends Service {
         String CHANNEL_ID = "my_channel_01";
         int importance = NotificationManager.IMPORTANCE_HIGH;
         String name = "q";
-        long[] vibrate = new long[] { 1000, 1000, 1000, 1000, 1000 };
+        long[] vibrate = new long[] { 200, 200 };
 
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -115,6 +113,7 @@ public class NotificationService extends Service {
         Log.d(TAG, "createNotification: notification id = " + NOTIFY_ID);
 
         notificationManager.notify(NOTIFY_ID, notification);
+        sendMessageToAlarmService();
 
         NOTIFY_ID++;
     }
@@ -138,14 +137,20 @@ public class NotificationService extends Service {
             int task = intent.getIntExtra("task", 0);
             Log.d(TAG, "NotificationService: onReceive: task code " + task);
             Point point = (Point) intent.getSerializableExtra("point");
-            if (task == TASK_CLOSE_NOTIFICATION_CODE) {
+            if (task == BroadcastActions.CLOSE_NOTIFICATION) {
                 Log.d(TAG, "NotificationService: onReceive: close notification ");
                 closeNotification(point);
-            } else if (task == TASK_CREATE_NOTIFICATION_CODE) {
+            } else if (task == BroadcastActions.CREATE_NOTIFICATION) {
                 Log.d(TAG, "NotificationService: onReceive: create notification ");
                 createNotification(point);
             }
         }
+    }
+
+    private void sendMessageToAlarmService() {
+        Intent alarm = new Intent(Constants.ALARM_ACTION)
+                .putExtra("task", 500);
+        sendBroadcast(alarm);
     }
 
 }

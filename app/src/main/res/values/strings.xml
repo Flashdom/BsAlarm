@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">BSAlarmer</string>
     <string name="title_activity_maps">Map</string>
-    <string name = "buttonMap">Перейти к карте</string>
-    <string name = "buttonMusic">Установить сигнал</string>
+    <string name="buttonMap">Перейти к карте</string>
+    <string name="buttonMusic">Установить сигнал</string>
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyD2q3cdN8y353tANWwdPb2aO50m2GUnVPs</string>
+    <string name="ru_open_point_list">Все точки</string>
+    <string name="ru_point_name_text_view">Название точки</string>
 </resources>
