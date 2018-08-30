@@ -13,7 +13,6 @@ import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.MyLocationManager;
 import com.bsaldevs.bsalarmer.Point;
-import com.bsaldevs.bsalarmer.PointDataContainer;
 
 import java.util.ArrayList;
 
@@ -64,7 +63,7 @@ public class LocationManagerService extends Service {
             int task = intent.getIntExtra("task", 0);
             Log.d(TAG, "LocationManagerService: onReceive: task code " + task);
             if (task == BroadcastActions.ADD_TARGET) {
-                PointDataContainer point = (PointDataContainer) intent.getSerializableExtra("point");
+                Point point = (Point) intent.getSerializableExtra("point");
                 String bind = intent.getStringExtra("bind");
                 myLocationManager.addTarget(point, bind);
             } else if (task == BroadcastActions.REMOVE_TARGET) {
@@ -76,8 +75,8 @@ public class LocationManagerService extends Service {
                 myLocationManager.removeTarget(bind);
             } else if (task == BroadcastActions.CHANGE_TARGET) {
                 String bind = intent.getStringExtra("bind");
-                PointDataContainer pseudoPoint = (PointDataContainer) intent.getSerializableExtra("pseudoPoint");
-                myLocationManager.changeTarget(bind, pseudoPoint);
+                Point point = (Point) intent.getSerializableExtra("point");
+                myLocationManager.changeTarget(bind, point);
             } else if (task == BroadcastActions.SET_USER_LOCATION) {
                 double lat = intent.getDoubleExtra("lat", 0);
                 double lng = intent.getDoubleExtra("lng", 0);

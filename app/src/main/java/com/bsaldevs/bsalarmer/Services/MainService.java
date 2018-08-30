@@ -15,8 +15,6 @@ import com.bsaldevs.bsalarmer.Constants;
 
 public class MainService extends Service {
 
-    private BroadcastReceiver receiver;
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -25,9 +23,7 @@ public class MainService extends Service {
 
     @Override
     public void onCreate() {
-
         Log.d(Constants.TAG, "MainService: onCreate");
-
         super.onCreate();
     }
 
@@ -54,7 +50,6 @@ public class MainService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(receiver);
     }
 
 }

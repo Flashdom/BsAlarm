@@ -72,7 +72,7 @@ public class MyLocationManager {
         pointManager.remove(bind);
     }
 
-    public void addTarget(PointDataContainer pPoint, String bind) {
+    public void addTarget(Point pPoint, String bind) {
         pointManager.createPoint(pPoint, bind);
         checkIsTargetReached(pointManager.getPointByBind(bind));
     }
@@ -133,8 +133,8 @@ public class MyLocationManager {
         context.sendBroadcast(notification);
     }
 
-    public void changeTarget(String bind, PointDataContainer pseudoPoint) {
-        pointManager.changePointByBind(bind, pseudoPoint);
+    public void changeTarget(String bind, Point point) {
+        pointManager.changePointByBind(bind, point);
         checkIsTargetReached(getTargetByBind(bind));
     }
 }

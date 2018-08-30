@@ -1,7 +1,4 @@
 package com.bsaldevs.bsalarmer;
-
-import android.util.Log;
-
 import java.io.Serializable;
 
 public class Point implements Serializable {
@@ -12,17 +9,15 @@ public class Point implements Serializable {
     private double latitude = 0;
     private double longitude = 0;
     private String name = "";
-    private int tag = 0;
+    private int id = 0;
 
-    public Point(double latitude, double longitude, double radius, String name, int tag) {
+    public Point(double latitude, double longitude, double radius, String name) {
         this.achieved = false;
         this.latitude = latitude;
         this.longitude = longitude;
         this.radius = radius;
         this.name = name;
-        this.tag = tag;
         this.active = true;
-        Log.d("CDA", "Point created with tag = " + tag);
     }
 
     public boolean isAchieved() {
@@ -70,13 +65,12 @@ public class Point implements Serializable {
         this.longitude = longitude;
     }
 
-    public void setTag(int tag) {
-        this.tag = tag;
-        Log.d("CDA", "setTag " + tag);
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public int getTag() {
-        return tag;
+    public int getId() {
+        return id;
     }
 
     public void setActive(boolean active) {
@@ -98,7 +92,7 @@ public class Point implements Serializable {
         if (Double.compare(point.radius, radius) != 0) return false;
         if (Double.compare(point.latitude, latitude) != 0) return false;
         if (Double.compare(point.longitude, longitude) != 0) return false;
-        if (tag != point.tag) return false;
+        if (id != point.id) return false;
         return name != null ? name.equals(point.name) : point.name == null;
     }
 
@@ -114,7 +108,7 @@ public class Point implements Serializable {
         temp = Double.doubleToLongBits(longitude);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + tag;
+        result = 31 * result + id;
         return result;
     }
 }

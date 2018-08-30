@@ -52,7 +52,7 @@ public class MainMenuActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent();
-                intent.setType("audio/*");
+                intent.setType("audio/*"); //???
                 intent.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(intent, requestCodeForSongChoose);
             }

@@ -5,9 +5,7 @@ import android.util.Log;
 
 import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.Point;
-import com.bsaldevs.bsalarmer.PointDataContainer;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +19,7 @@ public class PointManager {
     private List<Point> points;
     private List<String> binds;
     private CacheManager cacheManager;
-    private static int pointTag = 0;
+    private static int id = 0;
 
     public PointManager(Context context) {
         Log.d(TAG, "PointManager: constructor");
@@ -29,19 +27,22 @@ public class PointManager {
         binds = new ArrayList<>();
         cacheManager = new CacheManager(context);
         load();
-        pointTag = points.size();
+        id = points.size();
     }
 
-    public void createAll(List<PointDataContainer> list, List<String> binds) {
+    public void createAll(List<Point> list, List<String> binds) {
         Log.d(TAG, "PointManager: createAll");
         for (int i = 0; i < list.size(); i++) {
             createPoint(list.get(i), binds.get(i));
         }
     }
 
-    public void createPoint(PointDataContainer pPoint, String bind) {
+    public void createPoint(Point point, String bind) {
         Log.d(TAG, "PointManager: add: point bind = " + bind);
-        points.add(new Point(pPoint.getLatitude(), pPoint.getLongitude(), pPoint.getRadius(), pPoint.getName(), pointTag++));
+
+        point.setId(id++);
+
+        points.add(point);
         binds.add(bind);
         save();
     }
@@ -92,7 +93,7 @@ public class PointManager {
     private void load() {
         Log.d(TAG, "PointManager: load");
         cacheManager.load();
-        List<PointDataContainer> mPoints = cacheManager.parsePoints();
+        List<Point> mPoints = cacheManager.parsePoints();
         List<String> fakeBinds = new ArrayList<>();
         for (int i = 0; i < mPoints.size(); i++) {
             fakeBinds.add("m" + i);
@@ -120,7 +121,7 @@ public class PointManager {
         }
     }
 
-    public void changePointByBind(String bind, PointDataContainer pseudoPoint) {
+    public void changePointByBind(String bind, Point pseudoPoint) {
         double lat = pseudoPoint.getLatitude();
         double lng = pseudoPoint.getLongitude();
         double radius = pseudoPoint.getRadius();

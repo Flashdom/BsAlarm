@@ -26,7 +26,6 @@ import android.widget.Toast;
 import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.Point;
-import com.bsaldevs.bsalarmer.PointDataContainer;
 import com.bsaldevs.bsalarmer.R;
 import com.bsaldevs.bsalarmer.Utils;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -89,6 +88,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (id == R.id.action_point_list) {
             Intent openPointList = new Intent(MapsActivity.this, PointListActivity.class);
             startActivity(openPointList);
+        } else if (id == R.id.action_add_point) {
+            Toast.makeText(MapsActivity.this, "Add point by button", Toast.LENGTH_SHORT).show();
         }
 
         return super.onOptionsItemSelected(item);
@@ -125,7 +126,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng latLng) {
-                showPointOfCreatingDialog(latLng);
+                showPointCreatingDialog(latLng);
             }
         });
 
@@ -192,15 +193,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     removeTarget(marker.getId());
                     marker.remove();
                     Toast.makeText(MapsActivity.this, "marker has been deleted", Toast.LENGTH_SHORT).show();
-
                     Log.d(TAG, "onMarkerDragEnd: marker has been deleted");
                 } else {
-
                     double lat = marker.getPosition().latitude;
                     double lng = marker.getPosition().longitude;
 
-                    PointDataContainer pseudoPoint = new PointDataContainer(lat, lng, 0, "");
-                    changeTarget(pseudoPoint, marker.getId());
+                    Point point = new Point(lat, lng, 0, "");
+                    changeTarget(point, marker.getId());
                 }
 
                 trashView.setVisibility(View.INVISIBLE);
@@ -223,7 +222,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    private void showPointOfCreatingDialog(final LatLng latLng) {
+    private void showPointCreatingDialog(final LatLng latLng) {
         AlertDialog.Builder mBuilder = new AlertDialog.Builder(MapsActivity.this);
         View mView = getLayoutInflater().inflate(R.layout.dialog_add_mark, null);
         final EditText editStationName = mView.findViewById(R.id.stationNameEdit);
@@ -286,7 +285,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Marker marker = createMarker(position, title);
         moveAndZoomCamera(position, mMap.getCameraPosition().zoom);
         double radius = 0;
-        PointDataContainer point = new PointDataContainer(position.latitude, position.longitude, radius, title);
+        Point point = new Point(position.latitude, position.longitude, radius, title);
         addTarget(point, marker.getId());
     }
 
@@ -404,7 +403,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         sendBroadcast(location);
     }
 
-    private void addTarget(PointDataContainer point, String bind) {
+    private void addTarget(Point point, String bind) {
         Log.d(TAG, "addTarget");
         Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
                 .putExtra("task", BroadcastActions.ADD_TARGET)
@@ -421,11 +420,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         sendBroadcast(location);
     }
 
-    private void changeTarget(PointDataContainer pseudoPoint, String bind) {
+    private void changeTarget(Point point, String bind) {
         Log.d(TAG, "changeTargetPosition");
         Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
                 .putExtra("task", BroadcastActions.CHANGE_TARGET)
-                .putExtra("pseudoPoint", pseudoPoint)
+                .putExtra("point", point)
                 .putExtra("bind", bind);
         sendBroadcast(location);
     }
