@@ -40,7 +40,7 @@ public class MainMenuActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isServicesOK()) {
-                    startMainService();
+                    //startMainService();
                     Intent maps = new Intent(MainMenuActivity.this, MapsActivity.class);
                     startActivity(maps);
                 }
@@ -51,24 +51,17 @@ public class MainMenuActivity extends AppCompatActivity {
         b2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent();
+                /*Intent intent = new Intent();
                 intent.setType("audio/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(intent, requestCodeForSongChoose);
+                startActivityForResult(intent, requestCodeForSongChoose);*/
+                Intent settings = new Intent(MainMenuActivity.this, SettingsActivity.class);
+                startActivity(settings);
             }
         });
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if ((requestCode == requestCodeForSongChoose) && (resultCode == RESULT_OK ) && (data!=null)) {
-            song = data.getData().toString();
-            Intent alarm = new Intent(Constants.NOTIFICATION_ACTION)
-                    .putExtra("song", song);
-            sendBroadcast(alarm);
-        }
-    }
 
     public boolean isServicesOK() {
         Log.d("CDA", "isServicesOK");
@@ -88,10 +81,5 @@ public class MainMenuActivity extends AppCompatActivity {
         return false;
     }
 
-    public void startMainService() {
-        Log.d(Constants.TAG, "startMainService");
-        Intent mainService = new Intent(this, MainService.class);
-        mainService.putExtra("song", song);
-        startService(mainService);
-    }
+
 }

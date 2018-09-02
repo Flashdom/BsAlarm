@@ -138,21 +138,6 @@ public class AlarmService extends Service {
 
     }
 
-    private class Run implements Runnable {
 
-        int startId;
-        int param;
-
-        public Run(int startId, int param) {
-            this.startId = startId;
-            this.param = param;
-            Log.d(TAG, "MyRun#" + startId + " create");
-        }
-
-        @Override
-        public void run() {
-            Log.d(TAG, "myRun started with param = " + param);
-        }
-    }
 
 }

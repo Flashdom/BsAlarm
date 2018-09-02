@@ -412,12 +412,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void sendNewLocationToLocationService(double lat, double lng) {
         Log.d(TAG, "sendNewLocationToLocationService");
-        Intent location = new Intent(Constants.BROADCAST_ACTION)
+        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
                 .putExtra("task", BroadcastActions.SET_USER_LOCATION)
                 .putExtra("lat", lat)
                 .putExtra("lng", lng);
         sendBroadcast(location);
     }
+
 
     private void addTarget(Point point, String bind) {
         Log.d(TAG, "addTarget");
