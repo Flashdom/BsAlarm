@@ -64,10 +64,6 @@ public class MyLocationManager {
         return pointManager.getPointByBind(bind);
     }
 
-    public void removeTarget(Point point) {
-        pointManager.remove(point);
-    }
-
     public void removeTarget(String bind) {
         pointManager.remove(bind);
     }

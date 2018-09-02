@@ -21,6 +21,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bsaldevs.bsalarmer.BroadcastActions;
@@ -60,6 +61,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Projection projection;
     private ImageView trashView;
 
+    private boolean isUserAddingPoint = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +93,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(openPointList);
         } else if (id == R.id.action_add_point) {
             Toast.makeText(MapsActivity.this, "Add point by button", Toast.LENGTH_SHORT).show();
+            isUserAddingPoint = true;
+            TextView solution = findViewById(R.id.textSolutionAddPoint);
+            solution.setVisibility(View.VISIBLE);
         }
 
         return super.onOptionsItemSelected(item);
@@ -126,7 +132,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng latLng) {
-                showPointCreatingDialog(latLng);
+                Log.d(TAG, "onMapLongClick");
+                //showPointCreatingDialog(latLng);
             }
         });
 
@@ -134,6 +141,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onMapClick(LatLng latLng) {
                 Log.d(TAG, "onMapClick");
+                Toast.makeText(MapsActivity.this, "on map click" , Toast.LENGTH_SHORT);
+
+                if (isUserAddingPoint) {
+                    isUserAddingPoint = false;
+                    TextView solution = findViewById(R.id.textSolutionAddPoint);
+                    solution.setVisibility(View.INVISIBLE);
+
+                    showPointCreatingDialog(latLng);
+                }
             }
         });
 
@@ -358,7 +374,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void onComplete(@NonNull com.google.android.gms.tasks.Task<Location> task) {
                         Log.d(TAG, "getDeviceLocation: onComplete");
-                        if (task.isSuccessful() && (task.getResult() != null)) {
+                        if (task.isSuccessful() && task.getResult() != null) {
                             Log.d(TAG, "onComplete: found location!");
                             Location currentLocation = task.getResult();
                             Log.d(TAG, "onComplete: location lat: " + currentLocation.getLatitude() + ", lng: " + currentLocation.getLongitude());

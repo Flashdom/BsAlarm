@@ -16,6 +16,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.bsaldevs.bsalarmer.Activities.MapsActivity;
 import com.bsaldevs.bsalarmer.AssociatedNotificationList;
@@ -41,6 +42,8 @@ public class NotificationService extends Service {
     private AssociatedNotificationList notifications;
     private BroadcastReceiver receiver;
 
+    //private Thread serviceThread;
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -63,7 +66,12 @@ public class NotificationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return super.onStartCommand(intent, flags, startId);
+        Thread serviceThread = new Thread(new MyRun());
+        serviceThread.start();
+        if (START_FLAG_REDELIVERY == flags) {
+            Log.d(TAG, "flags = START_FLAG_REDELIVERY");
+        }
+        return START_REDELIVER_INTENT;
     }
 
     @Override
@@ -73,9 +81,10 @@ public class NotificationService extends Service {
 
     private void createNotification(Point point) {
         Intent notificationIntent = new Intent(this, MapsActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this,
-                0, notificationIntent,
-                PendingIntent.FLAG_CANCEL_CURRENT);
+
+        //notificationIntent.putExtra("task", BroadcastActions.STOP_ALARM);
+
+        PendingIntent contentIntent = PendingIntent.getActivity(this,0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
         String CHANNEL_ID = "my_channel_01";
         int importance = NotificationManager.IMPORTANCE_HIGH;
@@ -102,10 +111,10 @@ public class NotificationService extends Service {
                 .setChannelId(CHANNEL_ID)
                 .setVibrate(vibrate)
                 .setAutoCancel(true)
-                .addAction(R.drawable.ic_baseline_close_24px, "Switch off", contentIntent);
+                .addAction(R.drawable.ic_baseline_close_24px, "Close", contentIntent);
 
         Bundle dest = new Bundle();
-        dest.putInt("pointTag", point.getTag());
+        dest.putInt("pointId", point.getId());
         builder.setExtras(dest);
 
         Notification notification = builder.build();
@@ -121,9 +130,9 @@ public class NotificationService extends Service {
     private void closeNotification(Point point) {
         for (int i = 0; i < notifications.size(); i++) {
             Notification notification = notifications.getNotificationByIndex(i);
-            int pointTag = notification.extras.getInt("pointTag", -1);
-            Log.d(TAG, "closeNotification: compare " + pointTag + " and " + point.getTag());
-            if (pointTag == point.getTag()) {
+            int pointId = notification.extras.getInt("pointId", -1);
+            Log.d(TAG, "closeNotification: compare " + pointId + " and " + point.getId());
+            if (pointId == point.getId()) {
                 int id = notifications.getId(notification);
                 Log.d(TAG, "closeNotification: notification id = " + id);
                 notificationManager.cancel(id);
@@ -153,4 +162,15 @@ public class NotificationService extends Service {
         sendBroadcast(alarm);
     }
 
+    private class MyRun implements Runnable {
+
+        public MyRun() {
+            Log.d(TAG, "MyRun create in NotificationService");
+        }
+
+        @Override
+        public void run() {
+
+        }
+    }
 }

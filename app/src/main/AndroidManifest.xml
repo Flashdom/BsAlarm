@@ -35,10 +35,18 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <service android:name=".Services.MainService" />
-        <service android:name=".Services.NotificationService" />
-        <service android:name=".Services.LocationManagerService" />
-        <service android:name=".Services.AlarmService" />
+        <service
+            android:name=".Services.MainService"
+            android:enabled="true" />
+        <service
+            android:name=".Services.NotificationService"
+            android:enabled="true" />
+        <service
+            android:name=".Services.LocationManagerService"
+            android:enabled="true" />
+        <service
+            android:name=".Services.AlarmService"
+            android:enabled="true" />
 
         <activity
             android:name=".Activities.MapsActivity"

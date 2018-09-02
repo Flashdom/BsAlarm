@@ -7,11 +7,16 @@ import android.content.IntentFilter;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ExpandableListView;
 import android.widget.ListView;
 
 import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
+import com.bsaldevs.bsalarmer.MyListAdapter;
 import com.bsaldevs.bsalarmer.Point;
 import com.bsaldevs.bsalarmer.R;
 
@@ -32,8 +37,8 @@ public class PointListActivity extends AppCompatActivity {
         IntentFilter intentFilter = new IntentFilter(Constants.POINT_LIST_ACTION);
         registerReceiver(receiver, intentFilter);
 
-        /*listView = findViewById(R.id.listView);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listView = findViewById(R.id.listView);
+        /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Button button = (Button) parent.getChildAt(position);

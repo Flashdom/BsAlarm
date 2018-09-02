@@ -18,6 +18,7 @@ public final class BroadcastActions {
     public static final int CREATE_NOTIFICATION = 301;
 
     public static final int ALARM = 400;
-    public static final int SET_SONG = 401;
+    public static final int STOP_ALARM = 401;
+    public static final int SET_SONG = 402;
 
 }

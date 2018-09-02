@@ -49,7 +49,10 @@ public class LocationManagerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return super.onStartCommand(intent, flags, startId);
+        if (START_FLAG_REDELIVERY == flags) {
+            Log.d(TAG, "flags = START_FLAG_REDELIVERY");
+        }
+        return START_REDELIVER_INTENT;
     }
 
     @Override

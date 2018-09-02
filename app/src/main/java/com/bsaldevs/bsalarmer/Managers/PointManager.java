@@ -47,18 +47,6 @@ public class PointManager {
         save();
     }
 
-    public void remove(Point point) {
-        Log.d(TAG, "PointManager: remove");
-        for (int i = 0; i < points.size(); i++) {
-            if (points.get(i).equals(point)) {
-                binds.remove(i);
-                points.remove(i);
-                save();
-                break;
-            }
-        }
-    }
-
     public void remove(String bind) {
         Log.d(TAG, "PointManager: remove");
         for (int i = 0; i < binds.size(); i++) {
@@ -140,5 +128,6 @@ public class PointManager {
 
         if (!name.equals(""))
             point.setName(name);
+        save();
     }
 }

@@ -30,34 +30,22 @@ import java.util.concurrent.Executors;
 
 public class AlarmService extends Service {
 
-    private static final String TAG = Constants.TAG;
+    private final String TAG = Constants.TAG;
     private Uri song;
     private MediaPlayer mediaPlayer;
     private boolean isAlarming = false;
-
     private BroadcastReceiver receiver;
 
     @Override
     public void onCreate() {
         super.onCreate();
-
         Log.d(TAG, "AlarmService: onCreate");
-
         mediaPlayer = new MediaPlayer();
-        receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
+        initReceiver();
+    }
 
-                int task = intent.getIntExtra("task", -1);
-                Log.d(TAG, "AlarmService: onReceive: task code " + task);
-                if (task == BroadcastActions.ALARM) {
-                    alarm();
-                } else if (task == BroadcastActions.SET_SONG) {
-                    song = Uri.parse(intent.getStringExtra("song"));
-                }
-            }
-        };
-
+    private void initReceiver() {
+        receiver = new MyReceiver();
         IntentFilter intentFilter = new IntentFilter(Constants.ALARM_ACTION);
         registerReceiver(receiver, intentFilter);
     }
@@ -70,12 +58,12 @@ public class AlarmService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        if (START_FLAG_REDELIVERY == flags) {
+            Log.d(TAG, "flags = START_FLAG_REDELIVERY");
+        }
         Log.d(TAG, "onStartCommand");
-
         song = Uri.parse(intent.getStringExtra("song"));
-
-        return START_NOT_STICKY;
+        return START_REDELIVER_INTENT;
     }
 
     @Override
@@ -95,8 +83,11 @@ public class AlarmService extends Service {
     }
 
     private void stopAlarming() {
-        Log.d(Constants.TAG, "stopAlarming");
-        stopSong();
+        if (isAlarming) {
+            Log.d(Constants.TAG, "stopAlarming");
+            stopSong();
+            isAlarming = false;
+        }
     }
 
     private void playSong() {
@@ -128,15 +119,31 @@ public class AlarmService extends Service {
             mediaPlayer.stop();
             mediaPlayer.release();
         }
-        isAlarming = false;
     }
 
-    class MyRun implements Runnable {
+    private class MyReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int task = intent.getIntExtra("task", -1);
+            Log.d(TAG, "AlarmService: onReceive: task code " + task);
+            if (task == BroadcastActions.ALARM) {
+                alarm();
+            } else if (task == BroadcastActions.STOP_ALARM) {
+                stopAlarming();
+            } else if (task == BroadcastActions.SET_SONG) {
+                song = Uri.parse(intent.getStringExtra("song"));
+            }
+        }
+
+    }
+
+    private class Run implements Runnable {
 
         int startId;
         int param;
 
-        public MyRun(int startId, int param) {
+        public Run(int startId, int param) {
             this.startId = startId;
             this.param = param;
             Log.d(TAG, "MyRun#" + startId + " create");
@@ -145,7 +152,6 @@ public class AlarmService extends Service {
         @Override
         public void run() {
             Log.d(TAG, "myRun started with param = " + param);
-            stopSelfResult(startId);
         }
     }
 
