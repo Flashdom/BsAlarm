@@ -40,9 +40,10 @@ public class MainMenuActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isServicesOK()) {
-                    //startMainService();
+                   // startMainService();
                     Intent maps = new Intent(MainMenuActivity.this, MapsActivity.class);
                     startActivity(maps);
+
                 }
             }
         });

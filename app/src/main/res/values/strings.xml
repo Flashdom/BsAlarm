@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">BSAlarmer</string>
-    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_maps">Карта</string>
     <string name="buttonMap">Перейти к карте</string>
     <string name="buttonMusic">Установить сигнал</string>
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyD2q3cdN8y353tANWwdPb2aO50m2GUnVPs</string>
@@ -8,5 +8,5 @@
     <string name="ru_point_name_text_view">Название точки</string>
     <string name="ru_add_point_button">Добавить точку</string>
     <string name="ru_solution_add_point">Коснитесь карты, чтобы добавить цель</string>
-    <string name="settings_eng">Settings</string>
+    <string name="settings">Настройки</string>
 </resources>

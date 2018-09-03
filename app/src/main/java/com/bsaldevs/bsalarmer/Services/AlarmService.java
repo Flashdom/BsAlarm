@@ -12,8 +12,10 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.bsaldevs.bsalarmer.Activities.SettingsActivity;
 import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
+import com.bsaldevs.bsalarmer.R;
 
 /**
  * Created by azatiSea on 10.08.2018.
@@ -95,10 +97,19 @@ public class AlarmService extends Service {
         }*/
 
         try {
-            mediaPlayer.create(this, song);
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mediaPlayer.setDataSource(getApplicationContext(), song);
-            mediaPlayer.prepare();
+            if (SettingsActivity.isChosen()) {
+                mediaPlayer.create(this, song);
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mediaPlayer.setDataSource(getApplicationContext(), song);
+                mediaPlayer.prepare();
+            }
+            else
+            {
+                mediaPlayer.create(this, R.raw.sound_19482);
+
+            }
+
+
             mediaPlayer.start();
         } catch (Exception e) {                                                                                                                                                                         //dsd
             e.printStackTrace();

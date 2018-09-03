@@ -1,6 +1,7 @@
 package com.bsaldevs.bsalarmer.Activities;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +15,12 @@ import com.bsaldevs.bsalarmer.Services.MainService;
 public class SettingsActivity extends AppCompatActivity {
     Button musicButoon;
     private String song = " ";
+    private static boolean isChosen=false;
+    public static boolean isChosen() {
+        return isChosen;
+    }
+
+
     private static final int requestCodeForSongChoose = 222;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +30,7 @@ public class SettingsActivity extends AppCompatActivity {
         musicButoon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isChosen=true;
                 Intent intent = new Intent();
                 intent.setType("audio/*"); //???
                 intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -44,10 +52,12 @@ public class SettingsActivity extends AppCompatActivity {
             startActivity(returning);
         }
     }
+
     public void startMainService() {
         Log.d(Constants.TAG, "startMainService");
         Intent mainService = new Intent(this, MainService.class);
         mainService.putExtra("song", song);
         startService(mainService);
     }
+
 }

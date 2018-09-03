@@ -122,7 +122,7 @@ public class NotificationService extends Service {
         Log.d(TAG, "createNotification: notification id = " + NOTIFY_ID);
 
         notificationManager.notify(NOTIFY_ID, notification);
-        sendMessageToAlarmService();
+
 
         NOTIFY_ID++;
     }
@@ -138,6 +138,8 @@ public class NotificationService extends Service {
                 notificationManager.cancel(id);
             }
         }
+        Intent stopalarming = new Intent(Constants.ALARM_ACTION).putExtra("task", BroadcastActions.STOP_ALARM);
+        sendBroadcast(stopalarming);
     }
 
     private class MyReceiver extends BroadcastReceiver {
@@ -156,11 +158,6 @@ public class NotificationService extends Service {
         }
     }
 
-    private void sendMessageToAlarmService() {
-        Intent alarm = new Intent(Constants.ALARM_ACTION)
-                .putExtra("task", 500);
-        sendBroadcast(alarm);
-    }
 
     private class MyRun implements Runnable {
 

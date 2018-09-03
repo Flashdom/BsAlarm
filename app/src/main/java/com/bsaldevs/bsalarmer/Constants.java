@@ -13,4 +13,5 @@ public final class Constants {
     public static final String ALARM_ACTION = "alarm";
     public static final String POINT_LIST_ACTION = "point_list";
     public static final String LOCATION_MANAGER_ACTION = "location_manager";
+
 }
