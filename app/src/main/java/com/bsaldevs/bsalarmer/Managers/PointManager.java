@@ -17,17 +17,13 @@ public class PointManager {
 
     private static final String TAG = Constants.TAG;
     private List<Point> points;
-    private List<String> binds;
     private CacheManager cacheManager;
-    private static int id = 0;
 
     public PointManager(Context context) {
         Log.d(TAG, "PointManager: constructor");
         points = new ArrayList<>();
-        binds = new ArrayList<>();
         cacheManager = new CacheManager(context);
         load();
-        id = points.size();
     }
 
     public void createAll(List<Point> list, List<String> binds) {
@@ -37,21 +33,17 @@ public class PointManager {
         }
     }
 
-    public void createPoint(Point point, String bind) {
-        Log.d(TAG, "PointManager: add: point bind = " + bind);
-
-        point.setId(id++);
-
+    public void createPoint(Point point, String id) {
+        Log.d(TAG, "PointManager: add: point id = " + id);
+        point.setId(id);
         points.add(point);
-        binds.add(bind);
         save();
     }
 
-    public void remove(String bind) {
+    public void remove(String id) {
         Log.d(TAG, "PointManager: remove");
-        for (int i = 0; i < binds.size(); i++) {
-            if (binds.get(i).equals(bind)) {
-                binds.remove(i);
+        for (int i = 0; i < points.size(); i++) {
+            if (points.get(i).getId().equals(id)) {
                 points.remove(i);
                 save();
                 break;
@@ -67,10 +59,10 @@ public class PointManager {
         return points.get(index);
     }
 
-    public Point getPointByBind(String bind) {
+    public Point getPoint(String id) {
         Point point = null;
-        for (int i = 0; i < binds.size(); i++) {
-            if (binds.get(i).equals(bind)) {
+        for (int i = 0; i < points.size(); i++) {
+            if (points.get(i).getId().equals(id)) {
                 point = points.get(i);
                 break;
             }
@@ -87,47 +79,50 @@ public class PointManager {
             fakeBinds.add("m" + i);
         }
         createAll(mPoints, fakeBinds);
-        seeAllPointBinds();
+        seeAllPointIds();
     }
 
     private void save() {
         Log.d(TAG, "PointManager: save");
         cacheManager.save(points);
-        seeAllPointBinds();
+        seeAllPointIds();
     }
 
     public void setPointPositionByBind(String bind, double lat, double lng) {
-        Point point = getPointByBind(bind);
+        Point point = getPoint(bind);
         point.setLatitude(lat);
         point.setLongitude(lng);
         save();
     }
 
-    private void seeAllPointBinds() {
+    private void seeAllPointIds() {
         for (int i = 0; i < points.size(); i++) {
-            Log.d(TAG, "point name = " + points.get(i).getName() + ", bind = " + binds.get(i));
+            Log.d(TAG, "point name = " + points.get(i).getName() + ", id = " + points.get(i).getId());
         }
     }
 
-    public void changePointByBind(String bind, Point pseudoPoint) {
-        double lat = pseudoPoint.getLatitude();
-        double lng = pseudoPoint.getLongitude();
-        double radius = pseudoPoint.getRadius();
-        String name = pseudoPoint.getName();
+    public void changePoint(Point point, String extras) {
 
-        Point point = getPointByBind(bind);
+        Point target = getPoint(point.getId());
 
-        if (lat > 0)
-            point.setLatitude(lat);
+        if (extras.contains("active"))
+            target.setActive(point.isActive());
 
-        if (lng > 0)
-            point.setLongitude(lng);
+        if (extras.contains("achieved"))
+            target.setAchieved(point.isAchieved());
 
-        if (radius > 0)
-            point.setRadius(radius);
+        if (extras.contains("name"))
+            target.setName(point.getName());
 
-        if (!name.equals(""))
-            point.setName(name);
+        if (extras.contains("radius"))
+            target.setRadius(point.getRadius());
+
+        if (extras.contains("lng"))
+            target.setLongitude(point.getLongitude());
+
+        if (extras.contains("lat"))
+            target.setLatitude(point.getLatitude());
+
         save();
     }
 }

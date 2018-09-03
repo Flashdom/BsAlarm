@@ -64,7 +64,7 @@ public class MainMenuActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if ((requestCode == requestCodeForSongChoose) && (resultCode == RESULT_OK ) && (data!=null)) {
             song = data.getData().toString();
-            Intent alarm = new Intent(Constants.NOTIFICATION_ACTION)
+            Intent alarm = new Intent(Constants.ALARM_ACTION)
                     .putExtra("song", song);
             sendBroadcast(alarm);
         }

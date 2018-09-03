@@ -7,16 +7,12 @@ import android.content.IntentFilter;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ExpandableListView;
 import android.widget.ListView;
 
 import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
-import com.bsaldevs.bsalarmer.MyListAdapter;
+import com.bsaldevs.bsalarmer.PointListAdapter;
 import com.bsaldevs.bsalarmer.Point;
 import com.bsaldevs.bsalarmer.R;
 
@@ -54,12 +50,12 @@ public class PointListActivity extends AppCompatActivity {
         sendBroadcast(location);
     }
 
-    private void changeTarget(Point point, String bind) {
+    private void changeTarget(Point point) {
         Log.d(Constants.TAG, "PointListActivity: sendMessageToLocationService");
         Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
                 .putExtra("task", BroadcastActions.CHANGE_TARGET)
                 .putExtra("point", point)
-                .putExtra("bind", bind);
+                .putExtra("packedPointExtras", "active|id");
         sendBroadcast(location);
     }
 
@@ -71,12 +67,12 @@ public class PointListActivity extends AppCompatActivity {
             if (task == BroadcastActions.GET_TARGETS) {
                 List<Point> points = (ArrayList<Point>) intent.getSerializableExtra("points");
 
-                String names[] = new String[points.size()];
-                for (int i = 0; i < points.size(); i++) {
-                    names[i] = points.get(i).getName();
+                List<String> names = new ArrayList<>();
+                for (Point point : points) {
+                    names.add(point.getName());
                 }
 
-                ArrayAdapter<String> adapter = new ArrayAdapter<String>(PointListActivity.this, R.layout.point_list_item, R.id.list_point_item_name, names);
+                ArrayAdapter<String> adapter = new PointListAdapter(PointListActivity.this, R.layout.point_list_item, R.id.listPointItemName, names, points);
 
                 listView = findViewById(R.id.listView);
                 listView.setAdapter(adapter);

@@ -9,7 +9,7 @@ public class Point implements Serializable {
     private double latitude = 0;
     private double longitude = 0;
     private String name = "";
-    private int id = 0;
+    private String id = "";
 
     public Point(double latitude, double longitude, double radius, String name) {
         this.achieved = false;
@@ -65,11 +65,11 @@ public class Point implements Serializable {
         this.longitude = longitude;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
@@ -89,11 +89,12 @@ public class Point implements Serializable {
         Point point = (Point) o;
 
         if (achieved != point.achieved) return false;
+        if (active != point.active) return false;
         if (Double.compare(point.radius, radius) != 0) return false;
         if (Double.compare(point.latitude, latitude) != 0) return false;
         if (Double.compare(point.longitude, longitude) != 0) return false;
-        if (id != point.id) return false;
-        return name != null ? name.equals(point.name) : point.name == null;
+        if (!name.equals(point.name)) return false;
+        return id.equals(point.id);
     }
 
     @Override
@@ -101,14 +102,78 @@ public class Point implements Serializable {
         int result;
         long temp;
         result = (achieved ? 1 : 0);
+        result = 31 * result + (active ? 1 : 0);
         temp = Double.doubleToLongBits(radius);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(latitude);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(longitude);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + id;
+        result = 31 * result + name.hashCode();
+        result = 31 * result + id.hashCode();
         return result;
+    }
+
+    public static class Builder {
+        private boolean achieved = false;
+        private boolean active = true;
+        private double radius = 0;
+        private double latitude = 0;
+        private double longitude = 0;
+        private String name = "";
+        private String id = "";
+
+        public Builder() {
+
+        }
+
+        public Builder setAchieved(boolean value) {
+            achieved = value;
+            return this;
+        }
+
+        public Builder setActive(boolean value) {
+            active = value;
+            return this;
+        }
+
+        public Builder setRadius(double value) {
+            radius = value;
+            return this;
+        }
+
+        public Builder setLatitude(double value) {
+            latitude = value;
+            return this;
+        }
+
+        public Builder setLongitude(double value) {
+            longitude = value;
+            return this;
+        }
+
+        public Builder setName(String value) {
+            name = value;
+            return this;
+        }
+
+        public Builder setId(String value) {
+            id = value;
+            return this;
+        }
+
+        public Point build() {
+            return new Point(this);
+        }
+    }
+
+    private Point(Builder builder) {
+        achieved = builder.achieved;
+        active = builder.active;
+        radius = builder.radius;
+        latitude = builder.latitude;
+        longitude = builder.longitude;
+        name = builder.name;
+        id = builder.id;
     }
 }

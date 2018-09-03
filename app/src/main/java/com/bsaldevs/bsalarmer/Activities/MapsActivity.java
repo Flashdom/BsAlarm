@@ -214,8 +214,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     double lat = marker.getPosition().latitude;
                     double lng = marker.getPosition().longitude;
 
-                    Point point = new Point(lat, lng, 0, "");
-                    changeTarget(point, marker.getId());
+                    Point point = new Point.Builder()
+                            .setLatitude(lat)
+                            .setLongitude(lng)
+                            .setId(marker.getId())
+                            .build();
+
+                    changeTarget(point);
                 }
 
                 trashView.setVisibility(View.INVISIBLE);
@@ -412,36 +417,36 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void sendNewLocationToLocationService(double lat, double lng) {
         Log.d(TAG, "sendNewLocationToLocationService");
-        Intent location = new Intent(Constants.BROADCAST_ACTION)
+        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
                 .putExtra("task", BroadcastActions.SET_USER_LOCATION)
                 .putExtra("lat", lat)
                 .putExtra("lng", lng);
         sendBroadcast(location);
     }
 
-    private void addTarget(Point point, String bind) {
+    private void addTarget(Point point, String id) {
         Log.d(TAG, "addTarget");
         Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
                 .putExtra("task", BroadcastActions.ADD_TARGET)
                 .putExtra("point", point)
-                .putExtra("bind", bind);
+                .putExtra("id", id);
         sendBroadcast(location);
     }
 
-    private void removeTarget(String bind) {
+    private void removeTarget(String id) {
         Log.d(TAG, "removeTarget");
         Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
                 .putExtra("task", BroadcastActions.REMOVE_TARGET)
-                .putExtra("bind", bind);
+                .putExtra("id", id);
         sendBroadcast(location);
     }
 
-    private void changeTarget(Point point, String bind) {
+    private void changeTarget(Point point) {
         Log.d(TAG, "changeTargetPosition");
         Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
                 .putExtra("task", BroadcastActions.CHANGE_TARGET)
                 .putExtra("point", point)
-                .putExtra("bind", bind);
+                .putExtra("packedPointExtras", "lat|lng");
         sendBroadcast(location);
     }
 

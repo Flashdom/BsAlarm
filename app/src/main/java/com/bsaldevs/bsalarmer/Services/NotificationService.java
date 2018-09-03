@@ -114,7 +114,7 @@ public class NotificationService extends Service {
                 .addAction(R.drawable.ic_baseline_close_24px, "Close", contentIntent);
 
         Bundle dest = new Bundle();
-        dest.putInt("pointId", point.getId());
+        dest.putString("pointId", point.getId());
         builder.setExtras(dest);
 
         Notification notification = builder.build();
@@ -130,9 +130,9 @@ public class NotificationService extends Service {
     private void closeNotification(Point point) {
         for (int i = 0; i < notifications.size(); i++) {
             Notification notification = notifications.getNotificationByIndex(i);
-            int pointId = notification.extras.getInt("pointId", -1);
+            String pointId = notification.extras.getString("pointId", "");
             Log.d(TAG, "closeNotification: compare " + pointId + " and " + point.getId());
-            if (pointId == point.getId()) {
+            if (pointId.equals(point.getId())) {
                 int id = notifications.getId(notification);
                 Log.d(TAG, "closeNotification: notification id = " + id);
                 notificationManager.cancel(id);

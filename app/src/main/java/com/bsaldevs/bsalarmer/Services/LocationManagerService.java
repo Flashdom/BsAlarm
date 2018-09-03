@@ -11,7 +11,7 @@ import android.util.Log;
 
 import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
-import com.bsaldevs.bsalarmer.MyLocationManager;
+import com.bsaldevs.bsalarmer.Managers.MyLocationManager;
 import com.bsaldevs.bsalarmer.Point;
 
 import java.util.ArrayList;
@@ -67,19 +67,21 @@ public class LocationManagerService extends Service {
             Log.d(TAG, "LocationManagerService: onReceive: task code " + task);
             if (task == BroadcastActions.ADD_TARGET) {
                 Point point = (Point) intent.getSerializableExtra("point");
-                String bind = intent.getStringExtra("bind");
-                myLocationManager.addTarget(point, bind);
+                String id = intent.getStringExtra("id");
+                myLocationManager.addTarget(point, id);
             } else if (task == BroadcastActions.REMOVE_TARGET) {
-                String bind = intent.getStringExtra("bind");
+                String id = intent.getStringExtra("id");
                 Intent notification = new Intent(Constants.NOTIFICATION_ACTION)
                         .putExtra("task", BroadcastActions.CLOSE_NOTIFICATION)
-                        .putExtra("point", myLocationManager.getTargetByBind(bind));
+                        .putExtra("point", myLocationManager.getTargetById(id));
                 sendBroadcast(notification);
-                myLocationManager.removeTarget(bind);
+                myLocationManager.removeTarget(id);
             } else if (task == BroadcastActions.CHANGE_TARGET) {
-                String bind = intent.getStringExtra("bind");
                 Point point = (Point) intent.getSerializableExtra("point");
-                myLocationManager.changeTarget(bind, point);
+                String extras = intent.getStringExtra("packedPointExtras");
+
+                myLocationManager.changeTarget(point, extras);
+
             } else if (task == BroadcastActions.SET_USER_LOCATION) {
                 double lat = intent.getDoubleExtra("lat", 0);
                 double lng = intent.getDoubleExtra("lng", 0);
