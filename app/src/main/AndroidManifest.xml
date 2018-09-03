@@ -59,6 +59,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".Activities.PointListActivity"></activity>
+        <activity
+            android:name=".Activities.SettingsActivity"
+            android:label="@string/settings_eng"></activity>
     </application>
 
 </manifest>
