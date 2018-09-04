@@ -43,6 +43,7 @@ public class MainMenuActivity extends AppCompatActivity {
                     startMainService();
                     Intent maps = new Intent(MainMenuActivity.this, MapsActivity.class);
                     startActivity(maps);
+
                 }
             }
         });

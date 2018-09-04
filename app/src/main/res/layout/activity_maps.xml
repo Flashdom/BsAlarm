@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <fragment
@@ -56,7 +57,12 @@
             android:textSize="15sp"
             android:textColor="#292929"
             android:id="@+id/input_search"
-            android:background="null"
+            android:imeOptions="actionSearch"
+            android:maxLines="1"
+            android:lines="1"
+            android:singleLine="true"
+
+            android:background="@null"
             android:hint="@string/ru_search_hint"/>
 
     </RelativeLayout>

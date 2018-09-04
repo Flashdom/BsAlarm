@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -18,6 +20,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -43,6 +46,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,11 +66,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private ImageView trashView;
 
     private boolean isUserAddingPoint = false;
+    private EditText searchText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        init();
+        getLocationPermission();
+        initMap();
+    }
+
+    private void init() {
+
+        Log.d(TAG, "MapsActivity: init");
 
         trashView = findViewById(R.id.trashView);
         receiver = new MyReceiver();
@@ -74,8 +88,35 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         IntentFilter intentFilter = new IntentFilter(Constants.MAPS_ACTION);
         registerReceiver(receiver, intentFilter);
 
-        getLocationPermission();
-        initMap();
+        searchText = findViewById(R.id.input_search);
+        searchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH
+                        || actionId == EditorInfo.IME_ACTION_DONE
+                        || event.getAction() == KeyEvent.ACTION_DOWN
+                        || event.getAction() == KeyEvent.KEYCODE_ENTER)
+                    geoLocate();
+                return false;
+            }
+        });
+    }
+
+    private void geoLocate() {
+        Log.d(TAG, "MapsActivity: geoLocate");
+        String searchString = searchText.getText().toString();
+
+        Geocoder geocoder = new Geocoder(MapsActivity.this);
+        List<Address> addresses = new ArrayList<>();
+        try {
+            addresses = geocoder.getFromLocationName(searchString, 1);
+        } catch (IOException e) {
+            Log.d(TAG, "geoLocate: " + e.getMessage());
+        }
+        if (addresses.size() > 0) {
+            Address address = addresses.get(0);
+            Log.d(TAG, "getLocate: found location " + address.toString());
+        }
     }
 
     @Override
