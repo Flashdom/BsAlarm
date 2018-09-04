@@ -423,7 +423,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .putExtra("lng", lng);
         sendBroadcast(location);
     }
-    
+
     private void addTarget(Point point, String id) {
         Log.d(TAG, "addTarget");
         Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)

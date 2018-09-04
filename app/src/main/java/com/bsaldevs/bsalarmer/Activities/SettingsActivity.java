@@ -24,7 +24,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent();
-                intent.setType("audio/*"); //???
+                intent.setType("audio/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(intent, requestCodeForSongChoose);
 
@@ -39,15 +39,8 @@ public class SettingsActivity extends AppCompatActivity {
             Intent alarm = new Intent(Constants.NOTIFICATION_ACTION)
                     .putExtra("song", song);
             sendBroadcast(alarm);
-            startMainService();
             Intent returning = new Intent(SettingsActivity.this, MainMenuActivity.class);
             startActivity(returning);
         }
-    }
-    public void startMainService() {
-        Log.d(Constants.TAG, "startMainService");
-        Intent mainService = new Intent(this, MainService.class);
-        mainService.putExtra("song", song);
-        startService(mainService);
     }
 }
