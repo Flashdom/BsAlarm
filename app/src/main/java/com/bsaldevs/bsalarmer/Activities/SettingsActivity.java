@@ -8,6 +8,7 @@ import android.widget.Button;
 
 import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.R;
+import com.bsaldevs.bsalarmer.Services.MainService;
 
 public class SettingsActivity extends AppCompatActivity {
     Button musicButton;
@@ -41,9 +42,8 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if ((requestCode == requestCodeForSongChoose) && (resultCode == RESULT_OK ) && (data!=null)) {
             song = data.getData().toString();
-            Intent alarm = new Intent(Constants.NOTIFICATION_ACTION)
-                    .putExtra("song", song);
-            sendBroadcast(alarm);
+            Intent alarm = new Intent(SettingsActivity.this, MainService.class);
+                    alarm.putExtra("song", song);
             Intent returning = new Intent(SettingsActivity.this, MainMenuActivity.class);
             startActivity(returning);
         }

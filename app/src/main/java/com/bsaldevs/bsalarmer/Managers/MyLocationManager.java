@@ -154,6 +154,7 @@ public class MyLocationManager {
         else {
             Log.d(TAG, "sendChangedStateOfPoint: close notification");
             notification.putExtra("task", BroadcastActions.CLOSE_NOTIFICATION);
+            alarm.putExtra("task", BroadcastActions.STOP_ALARM);
         }
         context.sendBroadcast(notification);
         context.sendBroadcast(alarm);

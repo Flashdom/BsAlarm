@@ -9,4 +9,5 @@
     <string name="ru_add_point_button">Добавить точку</string>
     <string name="ru_solution_add_point">Коснитесь карты, чтобы добавить цель</string>
     <string name="ru_search_hint">Введите адрес</string>
+    <string name="settings">Настройки</string>
 </resources>

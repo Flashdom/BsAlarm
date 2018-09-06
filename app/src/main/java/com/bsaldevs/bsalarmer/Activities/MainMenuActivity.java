@@ -32,30 +32,7 @@ public class MainMenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
 
-        song = "";
-
-        b1 = findViewById(R.id.button);
-
-        b1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (isServicesOK()) {
-                    startMainService();
-                    Intent maps = new Intent(MainMenuActivity.this, MapsActivity.class);
-                    startActivity(maps);
-
-                }
-            }
-        });
-        b2 = findViewById(R.id.button2);
-
-        b2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent settings = new Intent(MainMenuActivity.this, SettingsActivity.class);
-                startActivity(settings);
-            }
-        });
+      initGUI();
 
     }
 
@@ -80,9 +57,37 @@ public class MainMenuActivity extends AppCompatActivity {
     public void startMainService() {
         Log.d(Constants.TAG, "startMainService");
         Intent mainService = new Intent(this, MainService.class);
-        mainService.putExtra("song", song);
+        if (!SettingsActivity.isChosen())
+        mainService.putExtra("song", R.raw.sound_19482);
         startService(mainService);
     }
+    public void initGUI ()
+    {
 
+        song = "";
+
+        b1 = findViewById(R.id.button);
+
+        b1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isServicesOK()) {
+                    startMainService();
+                    Intent maps = new Intent(MainMenuActivity.this, MapsActivity.class);
+                    startActivity(maps);
+
+                }
+            }
+        });
+        b2 = findViewById(R.id.button2);
+
+        b2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent settings = new Intent(MainMenuActivity.this, SettingsActivity.class);
+                startActivity(settings);
+            }
+        });
+    }
 
 }
