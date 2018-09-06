@@ -144,7 +144,6 @@ public class MyLocationManager {
         Intent notification = new Intent(Constants.NOTIFICATION_ACTION)
                 .putExtra("point", point);
         Intent alarm = new Intent(Constants.ALARM_ACTION);
-                //.putExtra("point" ,point);
 
         if (reached) {
             Log.d(TAG, "sendChangedStateOfPoint: create notification");
@@ -154,6 +153,7 @@ public class MyLocationManager {
         else {
             Log.d(TAG, "sendChangedStateOfPoint: close notification");
             notification.putExtra("task", BroadcastActions.CLOSE_NOTIFICATION);
+            alarm.putExtra("task", BroadcastActions.STOP_ALARM);
         }
         context.sendBroadcast(notification);
         context.sendBroadcast(alarm);

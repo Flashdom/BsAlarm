@@ -32,10 +32,7 @@ public class MainService extends Service {
 
         Log.d(Constants.TAG, "MainService: onStartCommand");
 
-        String song = intent.getStringExtra("song");
-
-        Intent alarm = new Intent(this, AlarmService.class)
-                .putExtra("song", song);
+        Intent alarm = new Intent(this, AlarmService.class);
         startService(alarm);
 
         Intent notification = new Intent(this, NotificationService.class);

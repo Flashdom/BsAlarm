@@ -111,7 +111,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         try {
             addresses = geocoder.getFromLocationName(searchString, 1);
         } catch (IOException e) {
-            Log.d(TAG, "geoLocate: " + e.getMessage());
+            Log.d(TAG, "geoLocate (catch): " + e.getMessage());
         }
         if (addresses.size() > 0) {
             Address address = addresses.get(0);

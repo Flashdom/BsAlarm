@@ -22,17 +22,13 @@ public class MainMenuActivity extends AppCompatActivity {
     private Button b1;
     private Button b2;
 
-    private static final int requestCodeForSongChoose = 222;
     private static final int ERROR_DIALOG_REQUEST = 9001;
-
-    private String song;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
 
-        song = "";
+        startMainService();
 
         b1 = findViewById(R.id.button);
 
@@ -40,7 +36,6 @@ public class MainMenuActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isServicesOK()) {
-                    startMainService();
                     Intent maps = new Intent(MainMenuActivity.this, MapsActivity.class);
                     startActivity(maps);
 
@@ -80,7 +75,6 @@ public class MainMenuActivity extends AppCompatActivity {
     public void startMainService() {
         Log.d(Constants.TAG, "startMainService");
         Intent mainService = new Intent(this, MainService.class);
-        mainService.putExtra("song", song);
         startService(mainService);
     }
 

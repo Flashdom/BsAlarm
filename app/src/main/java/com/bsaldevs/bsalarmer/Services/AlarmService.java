@@ -34,6 +34,7 @@ public class AlarmService extends Service {
         super.onCreate();
         Log.d(TAG, "AlarmService: onCreate");
         mediaPlayer = new MediaPlayer();
+        song = null;
         initReceiver();
     }
 
@@ -55,7 +56,6 @@ public class AlarmService extends Service {
             Log.d(TAG, "flags = START_FLAG_REDELIVERY");
         }
         Log.d(TAG, "onStartCommand");
-        song = Uri.parse(intent.getStringExtra("song"));
         return START_REDELIVER_INTENT;
     }
 
@@ -87,36 +87,27 @@ public class AlarmService extends Service {
 
         if (song == null) {
             Log.d(TAG, "playSong: song == null");
-            return;
+            song = Uri.parse(String.valueOf(R.raw.sound));
         }
 
-        /*if (isAlarming) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-            isAlarming = false;
-        }*/
-
         try {
-            if (SettingsActivity.isChosen()) {
-                mediaPlayer.create(this, song);
-                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                mediaPlayer.setDataSource(getApplicationContext(), song);
-                mediaPlayer.prepare();
-            }
-            /*else
-            {
-                mediaPlayer.create(this, R.raw.sound_19482);
-            }*/
+            Log.d(TAG, "playSong: song selected");
 
-
+            mediaPlayer.setDataSource(AlarmService.this, song);
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mediaPlayer.prepare();
             mediaPlayer.start();
-        } catch (Exception e) {                                                                                                                                                                         //dsd
-            e.printStackTrace();
+
+            Log.d(TAG, "playSong: started");
+
+        } catch (Exception e) {
+            Log.d(TAG, "playSong: " + e.getMessage());
         }
     }
 
     private void stopSong() {
         if (mediaPlayer != null) {
+            mediaPlayer.pause();
             mediaPlayer.stop();
             mediaPlayer.release();
         }
@@ -133,7 +124,7 @@ public class AlarmService extends Service {
             } else if (task == BroadcastActions.STOP_ALARM) {
                 stopAlarming();
             } else if (task == BroadcastActions.SET_SONG) {
-                song = Uri.parse(intent.getStringExtra("song"));
+                song = intent.getParcelableExtra("song");
             }
         }
 
