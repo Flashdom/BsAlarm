@@ -9,4 +9,6 @@
     <string name="ru_open_point_list">Points</string>
     <string name="ru_point_name_text_view">Point\'s name</string>
     <string name="title_activity_maps">Map</string>
+    <string name="ru_search_hint">Enter Adress</string>
+    <string name="pointList">Open point\'s list</string>
 </resources>

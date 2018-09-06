@@ -12,6 +12,7 @@ import com.bsaldevs.bsalarmer.Services.MainService;
 
 public class SettingsActivity extends AppCompatActivity {
     Button musicButton;
+    Button pointListButton;
     private String song = " ";
     private static boolean isChosen=false;
     public static boolean isChosen() {
@@ -24,6 +25,24 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+
+       initGUI();
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if ((requestCode == requestCodeForSongChoose) && (resultCode == RESULT_OK ) && (data!=null)) {
+            song = data.getData().toString();
+            Intent alarm = new Intent(SettingsActivity.this, MainService.class);
+                    alarm.putExtra("song", song);
+            Intent returning = new Intent(SettingsActivity.this, MainMenuActivity.class);
+            startActivity(returning);
+        }
+    }
+    public void initGUI()
+    {
+
         musicButton =findViewById(R.id.buttonsetMusic);
         musicButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -36,16 +55,13 @@ public class SettingsActivity extends AppCompatActivity {
 
             }
         });
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if ((requestCode == requestCodeForSongChoose) && (resultCode == RESULT_OK ) && (data!=null)) {
-            song = data.getData().toString();
-            Intent alarm = new Intent(SettingsActivity.this, MainService.class);
-                    alarm.putExtra("song", song);
-            Intent returning = new Intent(SettingsActivity.this, MainMenuActivity.class);
-            startActivity(returning);
-        }
+        pointListButton=findViewById(R.id.buttonOpenPointList);
+        pointListButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent opener = new Intent(SettingsActivity.this,PointListActivity.class);
+                startActivity(opener);
+            }
+        });
     }
 }
