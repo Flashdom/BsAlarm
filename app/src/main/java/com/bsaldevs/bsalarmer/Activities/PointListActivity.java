@@ -6,9 +6,18 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
@@ -22,7 +31,10 @@ import java.util.List;
 public class PointListActivity extends AppCompatActivity {
 
     private BroadcastReceiver receiver;
-    private ListView listView;
+    //private ListView listView;
+    private RecyclerView pointsList;
+    List<Point> points;
+    ArrayList<PointWrapper> pwlist;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +45,8 @@ public class PointListActivity extends AppCompatActivity {
         IntentFilter intentFilter = new IntentFilter(Constants.POINT_LIST_ACTION);
         registerReceiver(receiver, intentFilter);
 
-        listView = findViewById(R.id.listView);
+        //listView = findViewById(R.id.listView);
+        pointsList = findViewById(R.id.pointsRecyclerView);
         /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -65,18 +78,24 @@ public class PointListActivity extends AppCompatActivity {
             int task = intent.getIntExtra("task", 0);
             Log.d(Constants.TAG, "MapsActivity: onReceive: task code " + task);
             if (task == BroadcastActions.GET_TARGETS) {
-                List<Point> points = (ArrayList<Point>) intent.getSerializableExtra("points");
+                points = (ArrayList<Point>) intent.getSerializableExtra("points");
 
-                List<String> names = new ArrayList<>();
-                for (Point point : points) {
-                    names.add(point.getName());
+                pwlist = new ArrayList<>();
+                for (Point p : points) {
+                    pwlist.add(new PointWrapper(p));
                 }
+                pointsList.setLayoutManager(new LinearLayoutManager(PointListActivity.this));
+                pointsList.setAdapter(new MyAdapter());
 
-                ArrayAdapter<String> adapter = new PointListAdapter(PointListActivity.this, R.layout.point_list_item, R.id.listPointItemName, names, points);
-
-                listView = findViewById(R.id.listView);
-                listView.setAdapter(adapter);
             }
+        }
+    }
+
+    private class PointWrapper{
+        public boolean expanded = false;
+        public Point point;
+        public PointWrapper(Point p){
+            point = p;
         }
     }
 
@@ -85,4 +104,72 @@ public class PointListActivity extends AppCompatActivity {
         super.onDestroy();
         unregisterReceiver(receiver);
     }
+
+    public class MyAdapter extends RecyclerView.Adapter<MyAdapter.PointViewHolder> {
+
+        public class PointViewHolder extends RecyclerView.ViewHolder {
+
+            public TextView pointName;
+            public ToggleButton arrow;
+            public LinearLayout expandPanel;
+
+            public PointViewHolder(View v) {
+                super(v);
+                pointName = v.findViewById(R.id.listPointItemName);
+                expandPanel = v.findViewById(R.id.pointItemHidden);
+                arrow = v.findViewById(R.id.toggleButton2);
+
+                v.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        int itemPosition = getLayoutPosition();
+                        /*
+                        if (expandedPosition >= 0) {
+                            int prev = expandedPosition;
+                            notifyItemChanged(prev);
+                        }
+                        */
+                        //expandedPosition = itemPosition;
+                        pwlist.get(itemPosition).expanded = !pwlist.get(itemPosition).expanded;
+                        notifyItemChanged(itemPosition);
+
+                    }
+                });
+            }
+        }
+
+
+        @Override
+        public PointViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.point_list_item, parent, false);
+            //PointViewHolder vh = new PointViewHolder(v);
+
+
+            return new PointViewHolder(v);
+        }
+
+
+        @Override
+        public void onBindViewHolder(PointViewHolder holder, int position) {
+
+            holder.pointName.setText(pwlist.get(position).point.getName());
+
+            if(pwlist.get(position).expanded){
+                holder.expandPanel.setVisibility(View.VISIBLE);
+                holder.arrow.setChecked(true);
+            } else {
+                holder.expandPanel.setVisibility(View.GONE);
+                holder.arrow.setChecked(false);
+            }
+
+
+        }
+
+        @Override
+        public int getItemCount() {
+            return pwlist.size();
+        }
+    }
+
 }
