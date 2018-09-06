@@ -81,7 +81,6 @@ public class NotificationService extends Service {
 
     private void createNotification(Point point) {
         Intent notificationIntent = new Intent(this, MapsActivity.class);
-
         //notificationIntent.putExtra("task", BroadcastActions.STOP_ALARM);
 
         PendingIntent contentIntent = PendingIntent.getActivity(this,0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -94,10 +93,10 @@ public class NotificationService extends Service {
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
             NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
             mNotificationManager.createNotificationChannel(mChannel);
         }
-
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setContentIntent(contentIntent)
                 .setSmallIcon(R.drawable.ic_baseline_departure_board_24px)
@@ -111,6 +110,7 @@ public class NotificationService extends Service {
                 .setChannelId(CHANNEL_ID)
                 .setVibrate(vibrate)
                 .setAutoCancel(true)
+                .setContentIntent(contentIntent)
                 .addAction(R.drawable.ic_baseline_close_24px, "Close", contentIntent);
 
         Bundle dest = new Bundle();

@@ -10,5 +10,8 @@
     <string name="ru_point_name_text_view">Point\'s name</string>
     <string name="title_activity_maps">Map</string>
     <string name="ru_search_hint">Enter Adress</string>
-    <string name="pointList">Open point\'s list</string>
+    <string name="pointList">Open point's list</string>
+    <string name="switch_off">Off</string>
+    <string name="wake_up">Wake up!</string>
+    <string name="arrived">You arrived at your destination</string>
 </resources>

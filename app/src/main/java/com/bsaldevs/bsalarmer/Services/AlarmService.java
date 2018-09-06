@@ -26,7 +26,12 @@ public class AlarmService extends Service {
     private final String TAG = Constants.TAG;
     private Uri song;
     private MediaPlayer mediaPlayer;
-    private boolean isAlarming = false;
+
+    public static boolean isIsAlarming() {
+        return isAlarming;
+    }
+
+    static private boolean isAlarming = false;
     private BroadcastReceiver receiver;
 
     @Override

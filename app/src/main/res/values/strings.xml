@@ -11,4 +11,7 @@
     <string name="ru_search_hint">Введите адрес</string>
     <string name="settings">Настройки</string>
     <string name="pointList">Открыть список точек</string>
+    <string name="switch_off">Отключить</string>
+    <string name="wake_up">Просыпайтесь!</string>
+    <string name="arrived">Вы достигли места назначения</string>
 </resources>
