@@ -368,25 +368,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onResume() {
         super.onResume();
-        AlertDialog.Builder ad;
-        String button1String = getResources().getString(R.string.switch_off);
-        ad = new AlertDialog.Builder(MapsActivity.this);
-        ad.setTitle(R.string.wake_up);  // заголовок
-        ad.setMessage(R.string.arrived); // сообщение
-        ad.setPositiveButton(button1String, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int arg1) {
+        if (AlarmService.isIsAlarming()) {
+            AlertDialog.Builder ad;
+            String button1String = getResources().getString(R.string.switch_off);
+            ad = new AlertDialog.Builder(MapsActivity.this);
+            ad.setTitle(R.string.wake_up);  // заголовок
+            ad.setMessage(R.string.arrived); // сообщение
+            ad.setPositiveButton(button1String, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int arg1) {
                     Intent stopalarming = new Intent(Constants.ALARM_ACTION);
-                    stopalarming.putExtra("task",BroadcastActions.STOP_ALARM);
+                    stopalarming.putExtra("task", BroadcastActions.STOP_ALARM);
                     sendBroadcast(stopalarming);
 
-            }
-        });
-        ad.setCancelable(true);
-        ad.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            public void onCancel(DialogInterface dialog) {
-            }
-        });
-        ad.show();
+                }
+            });
+            ad.setCancelable(true);
+            ad.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                public void onCancel(DialogInterface dialog) {
+                }
+            });
+            ad.show();
+        }
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
