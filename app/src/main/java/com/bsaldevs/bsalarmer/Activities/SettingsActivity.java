@@ -34,6 +34,8 @@ public class SettingsActivity extends AppCompatActivity {
                     .putExtra("song", song);
             sendBroadcast(alarm);
         }
+        Intent returning = new Intent(SettingsActivity.this,MainMenuActivity.class);
+        startActivity(returning);
     }
     public void initGUI()
     {
@@ -46,6 +48,7 @@ public class SettingsActivity extends AppCompatActivity {
                 intent.setType("audio/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(intent, requestCodeForSongChoose);
+
 
             }
         });

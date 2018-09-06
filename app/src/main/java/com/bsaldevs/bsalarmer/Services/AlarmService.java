@@ -92,7 +92,7 @@ public class AlarmService extends Service {
 
         try {
             Log.d(TAG, "playSong: song selected");
-
+            mediaPlayer.create(AlarmService.this, song);
             mediaPlayer.setDataSource(AlarmService.this, song);
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mediaPlayer.prepare();
