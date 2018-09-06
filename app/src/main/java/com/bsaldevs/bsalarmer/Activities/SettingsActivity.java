@@ -22,26 +22,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        selectMusicButton = findViewById(R.id.buttonsetMusic);
-        selectMusicButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Intent intent;
-
-                if (Build.VERSION.SDK_INT < 19) {
-                    intent = new Intent();
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
-                    intent.setType("audio/*");
-                    startActivityForResult(intent, requestCodeForSongChoose);
-                } else {
-                    intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    intent.setType("audio/*");
-                    startActivityForResult(intent, requestCodeForSongChoose);
-                }
-            }
-        });
+        initGUI();
     }
 
     @Override
@@ -53,5 +34,28 @@ public class SettingsActivity extends AppCompatActivity {
                     .putExtra("song", song);
             sendBroadcast(alarm);
         }
+    }
+    public void initGUI()
+    {
+
+        selectMusicButton =findViewById(R.id.buttonsetMusic);
+        selectMusicButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("audio/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(intent, requestCodeForSongChoose);
+
+            }
+        });
+        selectMusicButton=findViewById(R.id.buttonOpenPointList);
+        selectMusicButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent opener = new Intent(SettingsActivity.this,PointListActivity.class);
+                startActivity(opener);
+            }
+        });
     }
 }
