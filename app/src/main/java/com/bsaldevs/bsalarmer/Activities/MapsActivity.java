@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -31,6 +32,7 @@ import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.Point;
 import com.bsaldevs.bsalarmer.R;
+import com.bsaldevs.bsalarmer.Services.AlarmService;
 import com.bsaldevs.bsalarmer.Utils;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -77,7 +79,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         getLocationPermission();
         initMap();
     }
-
     private void init() {
 
         Log.d(TAG, "MapsActivity: init");
@@ -364,7 +365,31 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.d(TAG, "createMarker: new point added to map: " + mMap + ", position: " + position);
         return mMap.addMarker(markerOptions);
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (AlarmService.isIsAlarming()) {
+            AlertDialog.Builder ad;
+            String button1String = getResources().getString(R.string.switch_off);
+            ad = new AlertDialog.Builder(MapsActivity.this);
+            ad.setTitle(R.string.wake_up);  // заголовок
+            ad.setMessage(R.string.arrived); // сообщение
+            ad.setPositiveButton(button1String, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int arg1) {
+                    Intent stopalarming = new Intent(Constants.ALARM_ACTION);
+                    stopalarming.putExtra("task", BroadcastActions.STOP_ALARM);
+                    sendBroadcast(stopalarming);
 
+                }
+            });
+            ad.setCancelable(true);
+            ad.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                public void onCancel(DialogInterface dialog) {
+                }
+            });
+            ad.show();
+        }
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         locationPermissionGranted = false;

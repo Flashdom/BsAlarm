@@ -46,6 +46,7 @@ public class MyLocationManager {
             public void onLocationChanged(Location location) {
                 Log.d(TAG, "onLocationChanged");
                 setLocation(location.getLatitude(), location.getLongitude());
+
             }
 
             @Override
@@ -133,9 +134,11 @@ public class MyLocationManager {
 
     private void checkIsTargetsReached() { // TODO(Rename this method)
         List<Point> points = pointManager.getPoints();
+
         for (Point target : points) {
             checkIsTargetReached(target);
         }
+
     }
 
     private void sendChangedStateOfPoint(Point point, boolean reached) {
