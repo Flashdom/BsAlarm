@@ -12,16 +12,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
-import com.bsaldevs.bsalarmer.PointListAdapter;
 import com.bsaldevs.bsalarmer.Point;
 import com.bsaldevs.bsalarmer.R;
 
@@ -31,7 +27,6 @@ import java.util.List;
 public class PointListActivity extends AppCompatActivity {
 
     private BroadcastReceiver receiver;
-    //private ListView listView;
     private RecyclerView pointsList;
     List<Point> points;
     ArrayList<PointWrapper> pwlist;
@@ -44,15 +39,7 @@ public class PointListActivity extends AppCompatActivity {
         receiver = new MyReceiver();
         IntentFilter intentFilter = new IntentFilter(Constants.POINT_LIST_ACTION);
         registerReceiver(receiver, intentFilter);
-
-        //listView = findViewById(R.id.listView);
         pointsList = findViewById(R.id.pointsRecyclerView);
-        /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Button button = (Button) parent.getChildAt(position);
-            }
-        });*/
     }
 
     private void sendMessageToLocationService() {
@@ -112,12 +99,14 @@ public class PointListActivity extends AppCompatActivity {
             public TextView pointName;
             public ToggleButton arrow;
             public LinearLayout expandPanel;
+            private ToggleButton activation;
 
             public PointViewHolder(View v) {
                 super(v);
                 pointName = v.findViewById(R.id.listPointItemName);
                 expandPanel = v.findViewById(R.id.pointItemHidden);
                 arrow = v.findViewById(R.id.toggleButton2);
+                activation = v.findViewById(R.id.activeToggleButton);
 
                 v.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -151,9 +140,9 @@ public class PointListActivity extends AppCompatActivity {
 
 
         @Override
-        public void onBindViewHolder(PointViewHolder holder, int position) {
-
+        public void onBindViewHolder(PointViewHolder holder, final int position) {
             holder.pointName.setText(pwlist.get(position).point.getName());
+            holder.activation.setChecked(pwlist.get(position).point.isActive());
 
             if(pwlist.get(position).expanded){
                 holder.expandPanel.setVisibility(View.VISIBLE);
@@ -163,6 +152,16 @@ public class PointListActivity extends AppCompatActivity {
                 holder.arrow.setChecked(false);
             }
 
+            holder.activation.setChecked(pwlist.get(position).point.isActive());
+            holder.activation.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    pwlist.get(position).point.setActive(!pwlist.get(position).point.isActive());
+                    Point point = pwlist.get(position).point;
+                    sendUpdatedStateOfPoint(point);
+                }
+            });
+
 
         }
 
@@ -170,6 +169,15 @@ public class PointListActivity extends AppCompatActivity {
         public int getItemCount() {
             return pwlist.size();
         }
+    }
+
+    private void sendUpdatedStateOfPoint(Point point) {
+        Log.d(Constants.TAG, "PointRecyclerAdapter: sendUpdatedStateOfPoint");
+        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
+                .putExtra("task", BroadcastActions.CHANGE_TARGET)
+                .putExtra("point", point)
+                .putExtra("packedPointExtras", "active");
+        sendBroadcast(location);
     }
 
 }

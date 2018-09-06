@@ -3,15 +3,12 @@ package com.bsaldevs.bsalarmer;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import java.util.List;
@@ -20,12 +17,17 @@ import java.util.List;
  * Created by azatiSea on 02.09.2018.
  */
 
-public class PointListAdapter extends ArrayAdapter<String> {
+public class PointRecyclerAdapter extends RecyclerView.Adapter<PointRecyclerAdapter.ViewHolder> {
 
-    private int layout;
     private List<Point> points;
+    private Context context;
 
-    public PointListAdapter(@NonNull Context context, int resource, int textViewResourceId, @NonNull List<String> objects, List<Point> points) {
+    public PointRecyclerAdapter(Context context, List<Point> points) {
+        this.context = context;
+        this.points = points;
+    }
+
+    /*public PointRecyclerAdapter(@NonNull Context context, int resource, int textViewResourceId, @NonNull List<String> objects, List<Point> points) {
         super(context, resource, textViewResourceId, objects);
         this.layout = resource;
         this.points = points;
@@ -58,23 +60,55 @@ public class PointListAdapter extends ArrayAdapter<String> {
         }
 
         return convertView;
-    }
-
-    public class ViewHolder {
-        ToggleButton activePointButton;
-        TextView nameTextView;
-    }
+    }*/
 
     private Point getPoint(int position) {
         return points.get(position);
     }
 
-    private void sendUpdatedStateOfPoint(Point point, Context context) {
-        Log.d(Constants.TAG, "PointListAdapter: sendUpdatedStateOfPoint");
+    private void sendUpdatedStateOfPoint(Point point) {
+        Log.d(Constants.TAG, "PointRecyclerAdapter: sendUpdatedStateOfPoint");
         Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
                 .putExtra("task", BroadcastActions.CHANGE_TARGET)
                 .putExtra("point", point)
                 .putExtra("packedPointExtras", "active");
         context.sendBroadcast(location);
+    }
+
+    @NonNull
+    @Override
+    public PointRecyclerAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.point_list_item, parent, false);
+        return new ViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull PointRecyclerAdapter.ViewHolder holder, int position) {
+        final Point point = points.get(position);
+        holder.textViewName.setText(point.getName());
+        holder.activationButton.setChecked(point.isActive());
+        holder.activationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                point.setActive(!point.isActive());
+                sendUpdatedStateOfPoint(point);
+            }
+        });
+    }
+
+    @Override
+    public int getItemCount() {
+        return 0;
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        private TextView textViewName;
+        private ToggleButton activationButton;
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+            textViewName = itemView.findViewById(R.id.listPointItemName);
+            activationButton = itemView.findViewById(R.id.activeToggleButton);
+        }
     }
 }
