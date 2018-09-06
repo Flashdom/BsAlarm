@@ -11,6 +11,7 @@ import android.widget.Button;
 import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.R;
+import com.bsaldevs.bsalarmer.Services.MainService;
 
 public class SettingsActivity extends AppCompatActivity {
 

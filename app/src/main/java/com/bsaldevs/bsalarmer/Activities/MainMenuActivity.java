@@ -27,15 +27,24 @@ public class MainMenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-
         startMainService();
+        initGUI();
+    }
 
+    public void startMainService() {
+        Log.d(Constants.TAG, "startMainService");
+        Intent mainService = new Intent(this, MainService.class);
+        startService(mainService);
+    }
+
+    public void initGUI () {
         b1 = findViewById(R.id.button);
 
         b1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (isServicesOK()) {
+                    startMainService();
                     Intent maps = new Intent(MainMenuActivity.this, MapsActivity.class);
                     startActivity(maps);
 
@@ -51,7 +60,6 @@ public class MainMenuActivity extends AppCompatActivity {
                 startActivity(settings);
             }
         });
-
     }
 
     public boolean isServicesOK() {
@@ -71,12 +79,5 @@ public class MainMenuActivity extends AppCompatActivity {
         }
         return false;
     }
-
-    public void startMainService() {
-        Log.d(Constants.TAG, "startMainService");
-        Intent mainService = new Intent(this, MainService.class);
-        startService(mainService);
-    }
-
 
 }
