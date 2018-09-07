@@ -33,6 +33,7 @@ import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.Point;
 import com.bsaldevs.bsalarmer.R;
 import com.bsaldevs.bsalarmer.Services.AlarmService;
+import com.bsaldevs.bsalarmer.Services.MainService;
 import com.bsaldevs.bsalarmer.Utils;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -74,11 +75,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
+        startMainService();
         init();
         getLocationPermission();
         initMap();
     }
+    public void startMainService() {
+        Log.d(Constants.TAG, "startMainService");
+        Intent mainService = new Intent(this, MainService.class);
+        startService(mainService);
+    }
+
     private void init() {
 
         Log.d(TAG, "MapsActivity: init");
@@ -138,6 +145,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             isUserAddingPoint = true;
             TextView solution = findViewById(R.id.textSolutionAddPoint);
             solution.setVisibility(View.VISIBLE);
+        }
+        else if (id==R.id.action_settings)
+        {
+            Intent opensettings = new Intent(MapsActivity.this, SettingsActivity.class);
+            startActivity(opensettings);
+
         }
 
         return super.onOptionsItemSelected(item);
