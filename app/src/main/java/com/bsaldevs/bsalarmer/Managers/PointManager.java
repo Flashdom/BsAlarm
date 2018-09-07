@@ -26,10 +26,10 @@ public class PointManager {
         load();
     }
 
-    public void createAll(List<Point> list, List<String> binds) {
+    public void createAll(List<Point> list, List<String> identificators) {
         Log.d(TAG, "PointManager: createAll");
         for (int i = 0; i < list.size(); i++) {
-            createPoint(list.get(i), binds.get(i));
+            createPoint(list.get(i), identificators.get(i));
         }
     }
 
@@ -74,11 +74,11 @@ public class PointManager {
         Log.d(TAG, "PointManager: load");
         cacheManager.load();
         List<Point> mPoints = cacheManager.parsePoints();
-        List<String> fakeBinds = new ArrayList<>();
+        List<String> identificators = new ArrayList<>();
         for (int i = 0; i < mPoints.size(); i++) {
-            fakeBinds.add("m" + i);
+            identificators.add("m" + i);
         }
-        createAll(mPoints, fakeBinds);
+        createAll(mPoints, identificators);
         seeAllPointIds();
     }
 
