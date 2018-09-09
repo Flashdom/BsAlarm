@@ -2,11 +2,9 @@ package com.bsaldevs.bsalarmer.Activities;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Address;
@@ -27,18 +25,21 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
+import com.bsaldevs.bsalarmer.MyApplication;
 import com.bsaldevs.bsalarmer.Point;
 import com.bsaldevs.bsalarmer.R;
 import com.bsaldevs.bsalarmer.Services.AlarmService;
-import com.bsaldevs.bsalarmer.Services.MainService;
 import com.bsaldevs.bsalarmer.Utils;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -66,8 +67,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String TAG = Constants.TAG;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
 
-    private BroadcastReceiver receiver;
-
     private Boolean locationPermissionGranted = false;
 
     private Projection projection;
@@ -75,10 +74,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private boolean isUserAddingPoint = false;
     private EditText searchText;
+    private RelativeLayout seekLayout;
+
+    private MyApplication application;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent alarmService = new Intent(MapsActivity.this, AlarmService.class);
+        startService(alarmService);
+
+        application = (MyApplication) getApplication();
+        application.initMyLocationManager(this);
 
         setContentView(R.layout.activity_maps);
 
@@ -116,17 +124,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
 
-        startMainService();
         init();
         getLocationPermission();
         initMap();
 
 
-    }
-    public void startMainService() {
-        Log.d(Constants.TAG, "startMainService");
-        Intent mainService = new Intent(this, MainService.class);
-        startService(mainService);
     }
 
     private void init() {
@@ -134,20 +136,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.d(TAG, "MapsActivity: init");
 
         trashView = findViewById(R.id.trashView);
-        receiver = new MyReceiver();
 
-        IntentFilter intentFilter = new IntentFilter(Constants.MAPS_ACTION);
-        registerReceiver(receiver, intentFilter);
+        seekLayout = findViewById(R.id.seekerLayout);
+        seekLayout.setVisibility(View.INVISIBLE);
 
         searchText = findViewById(R.id.input_search);
         searchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                searchText.setCursorVisible(true);
                 if (actionId == EditorInfo.IME_ACTION_SEARCH
                         || actionId == EditorInfo.IME_ACTION_DONE
                         || event.getAction() == KeyEvent.ACTION_DOWN
-                        || event.getAction() == KeyEvent.KEYCODE_ENTER)
+                        || event.getAction() == KeyEvent.KEYCODE_ENTER) {
                     geoLocate();
+                    seekLayout.setVisibility(View.INVISIBLE);
+                    searchText.setText("");
+                }
                 return false;
             }
         });
@@ -185,24 +190,58 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(openPointList);
         } else if (id == R.id.action_add_point) {
             Toast.makeText(MapsActivity.this, "Add point by button", Toast.LENGTH_SHORT).show();
-            isUserAddingPoint = true;
-            TextView solution = findViewById(R.id.textSolutionAddPoint);
-            solution.setVisibility(View.VISIBLE);
+            showSelectAddPointMethodDialog();
         }
-        else if (id==R.id.action_settings)
-        {
-            Intent opensettings = new Intent(MapsActivity.this, SettingsActivity.class);
-            startActivity(opensettings);
-
+        else if (id==R.id.action_settings) {
+            Intent openSettings = new Intent(MapsActivity.this, SettingsActivity.class);
+            startActivity(openSettings);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    private void showSelectAddPointMethodDialog() {
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(MapsActivity.this);
+        View mView = getLayoutInflater().inflate(R.layout.dialog_select_method_add_target, null);
+
+        TextView textSelectMethod = mView.findViewById(R.id.textViewSelectAddTargetMethod);
+
+        ImageButton buttonSearch = mView.findViewById(R.id.buttonSearchMethod);
+        TextView textSearchMethod = mView.findViewById(R.id.textViewSearchMethod);
+
+        ImageButton buttonTap = mView.findViewById(R.id.buttonTapMethod);
+        TextView textTapMethod = mView.findViewById(R.id.textViewTapMethod);
+
+        mBuilder.setView(mView);
+        final AlertDialog dialog = mBuilder.create();
+        dialog.show();
+
+        buttonSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                seekLayout.setVisibility(View.VISIBLE);
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(searchText, InputMethodManager.SHOW_IMPLICIT);
+
+            }
+        });
+
+        buttonTap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                isUserAddingPoint = true;
+                TextView solution = findViewById(R.id.textSolutionAddPoint);
+                solution.setVisibility(View.VISIBLE);
+            }
+        });
+
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(receiver);
     }
 
     @Override
@@ -228,7 +267,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.d(TAG, "onMapReady: locationPermissionGranted is false");
         }
 
-        sendOnMapReady();
+        addTargetsToMap();
 
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
@@ -344,6 +383,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+    private void addTargetsToMap() {
+        List<Point> points = application.getTargetsList();
+
+        Log.d(TAG, "addTargetsToMap: points size " + points.size());
+
+        for (int i = 0; i < points.size(); i++) {
+
+            Point point = points.get(i);
+
+            LatLng position = new LatLng(point.getLatitude(), point.getLongitude());
+            String name = point.getName();
+            addMarker(position, name);
+        }
+    }
+
     private void showPointCreatingDialog(final LatLng latLng) {
         AlertDialog.Builder mBuilder = new AlertDialog.Builder(MapsActivity.this);
         View mView = getLayoutInflater().inflate(R.layout.dialog_add_mark, null);
@@ -358,7 +412,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 Toast.makeText(MapsActivity.this, "Mark: " + String.valueOf(editStationName.getText()) + " successfully added to map", Toast.LENGTH_SHORT).show();
-                addPoint(latLng, new String(String.valueOf(editStationName.getText())));
+
+                String name = String.valueOf(editStationName.getText());
+
+                String id = addMarker(latLng, name);
+                Point point = new Point(latLng.latitude, latLng.longitude, 0, name);
+
+                addTarget(point, id);
                 dialog.dismiss();
             }
         });
@@ -403,17 +463,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onBackPressed();
     }
 
-    public void addPoint(LatLng position, String title) {
+    public String addMarker(LatLng position, String title) {
         Marker marker = createMarker(position, title);
         moveAndZoomCamera(position, mMap.getCameraPosition().zoom);
-        double radius = 0;
-        Point point = new Point(position.latitude, position.longitude, radius, title);
-        addTarget(point, marker.getId());
-    }
-
-    public void addPointWithoutSending(LatLng position, String title) {
-        createMarker(position, title);
-        moveAndZoomCamera(position, mMap.getCameraPosition().zoom);
+        return marker.getId();
     }
 
     private Marker createMarker(LatLng position, String name) {
@@ -435,9 +488,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             ad.setMessage(R.string.arrived); // сообщение
             ad.setPositiveButton(button1String, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int arg1) {
-                    Intent stopalarming = new Intent(Constants.ALARM_ACTION);
-                    stopalarming.putExtra("task", BroadcastActions.STOP_ALARM);
-                    sendBroadcast(stopalarming);
+                    Intent stopAlarming = new Intent(Constants.ALARM_ACTION);
+                    stopAlarming.putExtra("task", BroadcastActions.STOP_ALARM);
+                    sendBroadcast(stopAlarming);
 
                 }
             });
@@ -542,58 +595,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void sendNewLocationToLocationService(double lat, double lng) {
         Log.d(TAG, "sendNewLocationToLocationService");
-        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
-                .putExtra("task", BroadcastActions.SET_USER_LOCATION)
-                .putExtra("lat", lat)
-                .putExtra("lng", lng);
-        sendBroadcast(location);
+        LatLng position = new LatLng(lat, lng);
+        application.setUserLocation(position);
     }
 
     private void addTarget(Point point, String id) {
         Log.d(TAG, "addTarget");
-        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
-                .putExtra("task", BroadcastActions.ADD_TARGET)
-                .putExtra("point", point)
-                .putExtra("id", id);
-        sendBroadcast(location);
+        application.addTarget(point, id);
     }
 
     private void removeTarget(String id) {
         Log.d(TAG, "removeTarget");
-        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
-                .putExtra("task", BroadcastActions.REMOVE_TARGET)
-                .putExtra("id", id);
-        sendBroadcast(location);
+        application.removeTarget(id);
     }
 
     private void changeTarget(Point point) {
         Log.d(TAG, "changeTargetPosition");
-        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
-                .putExtra("task", BroadcastActions.CHANGE_TARGET)
-                .putExtra("point", point)
-                .putExtra("packedPointExtras", "lat|lng");
-        sendBroadcast(location);
+        application.changeTarget(point);
     }
 
-    private void sendOnMapReady() {
-        Log.d(TAG, "sendOnMapReady");
-        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
-                .putExtra("task", BroadcastActions.GET_TARGETS)
-                .putExtra("sender", "mapsActivity");
-        sendBroadcast(location);
-    }
-
-    private class MyReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            int task = intent.getIntExtra("task", 0);
-            Log.d(TAG, "MapsActivity: onReceive: task code " + task);
-            if (task == BroadcastActions.GET_TARGETS) {
-                List<Point> points = (ArrayList<Point>) intent.getSerializableExtra("points");
-                for (Point point : points) {
-                    addPointWithoutSending(new LatLng(point.getLatitude(), point.getLongitude()), point.getName());
-                }
-            }
-        }
-    }
 }

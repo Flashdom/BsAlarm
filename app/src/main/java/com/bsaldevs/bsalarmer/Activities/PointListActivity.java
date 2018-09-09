@@ -18,6 +18,7 @@ import android.widget.ToggleButton;
 
 import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
+import com.bsaldevs.bsalarmer.MyApplication;
 import com.bsaldevs.bsalarmer.Point;
 import com.bsaldevs.bsalarmer.R;
 
@@ -26,56 +27,29 @@ import java.util.List;
 
 public class PointListActivity extends AppCompatActivity {
 
-    private BroadcastReceiver receiver;
     private RecyclerView pointsList;
-    List<Point> points;
-    ArrayList<PointWrapper> pwlist;
+    private ArrayList<PointWrapper> pwlist;
+    private MyApplication application;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_point_list);
-        sendMessageToLocationService();
-        receiver = new MyReceiver();
-        IntentFilter intentFilter = new IntentFilter(Constants.POINT_LIST_ACTION);
-        registerReceiver(receiver, intentFilter);
+        application = (MyApplication) getApplication();
         pointsList = findViewById(R.id.pointsRecyclerView);
+        fillView();
     }
 
-    private void sendMessageToLocationService() {
-        Log.d(Constants.TAG, "PointListActivity: sendMessageToLocationService");
-        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
-                .putExtra("task", BroadcastActions.GET_TARGETS)
-                .putExtra("sender", "pointListActivity");
-        sendBroadcast(location);
-    }
+    private void fillView() {
+        List<Point> points = application.getTargetsList();
 
-    private void changeTarget(Point point) {
-        Log.d(Constants.TAG, "PointListActivity: sendMessageToLocationService");
-        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
-                .putExtra("task", BroadcastActions.CHANGE_TARGET)
-                .putExtra("point", point)
-                .putExtra("packedPointExtras", "active|id");
-        sendBroadcast(location);
-    }
-
-    private class MyReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            int task = intent.getIntExtra("task", 0);
-            Log.d(Constants.TAG, "MapsActivity: onReceive: task code " + task);
-            if (task == BroadcastActions.GET_TARGETS) {
-                points = (ArrayList<Point>) intent.getSerializableExtra("points");
-
-                pwlist = new ArrayList<>();
-                for (Point p : points) {
-                    pwlist.add(new PointWrapper(p));
-                }
-                pointsList.setLayoutManager(new LinearLayoutManager(PointListActivity.this));
-                pointsList.setAdapter(new MyAdapter());
-
-            }
+        pwlist = new ArrayList<>();
+        for (Point p : points) {
+            pwlist.add(new PointWrapper(p));
         }
+
+        pointsList.setLayoutManager(new LinearLayoutManager(PointListActivity.this));
+        pointsList.setAdapter(new MyAdapter());
     }
 
     private class PointWrapper{
@@ -89,7 +63,6 @@ public class PointListActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(receiver);
     }
 
     public class MyAdapter extends RecyclerView.Adapter<MyAdapter.PointViewHolder> {
@@ -157,7 +130,12 @@ public class PointListActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     pwlist.get(position).point.setActive(!pwlist.get(position).point.isActive());
-                    Point point = pwlist.get(position).point;
+
+                    Point point = new Point.Builder()
+                            .setActive(pwlist.get(position).point.isActive())
+                            .setId(pwlist.get(position).point.getId())
+                            .build();
+
                     sendUpdatedStateOfPoint(point);
                 }
             });
@@ -173,11 +151,7 @@ public class PointListActivity extends AppCompatActivity {
 
     private void sendUpdatedStateOfPoint(Point point) {
         Log.d(Constants.TAG, "PointRecyclerAdapter: sendUpdatedStateOfPoint");
-        Intent location = new Intent(Constants.LOCATION_MANAGER_ACTION)
-                .putExtra("task", BroadcastActions.CHANGE_TARGET)
-                .putExtra("point", point)
-                .putExtra("packedPointExtras", "active");
-        sendBroadcast(location);
+        application.changeTarget(point);
     }
 
 }

@@ -2,7 +2,6 @@ package com.bsaldevs.bsalarmer.Activities;
 
 import android.app.Dialog;
 import android.content.Intent;
-import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,10 +9,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.bsaldevs.bsalarmer.Constants;
 import com.bsaldevs.bsalarmer.R;
 import com.bsaldevs.bsalarmer.Services.AlarmService;
-import com.bsaldevs.bsalarmer.Services.MainService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
@@ -27,15 +24,9 @@ public class MainMenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-        startMainService();
         initGUI();
     }
 
-    public void startMainService() {
-        Log.d(Constants.TAG, "startMainService");
-        Intent mainService = new Intent(this, MainService.class);
-        startService(mainService);
-    }
 
     public void initGUI () {
         b1 = findViewById(R.id.button);
@@ -44,10 +35,8 @@ public class MainMenuActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isServicesOK()) {
-                    startMainService();
                     Intent maps = new Intent(MainMenuActivity.this, MapsActivity.class);
                     startActivity(maps);
-
                 }
             }
         });

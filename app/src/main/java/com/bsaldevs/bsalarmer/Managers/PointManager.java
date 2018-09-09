@@ -101,8 +101,9 @@ public class PointManager {
         }
     }
 
-    public void changePoint(Point point, String extras) {
+    public void changePoint(Point point) {
 
+        String extras = point.getExtra();
         Point target = getPoint(point.getId());
 
         if (extras.contains("active"))
@@ -117,10 +118,10 @@ public class PointManager {
         if (extras.contains("radius"))
             target.setRadius(point.getRadius());
 
-        if (extras.contains("lng"))
+        if (extras.contains("longitude"))
             target.setLongitude(point.getLongitude());
 
-        if (extras.contains("lat"))
+        if (extras.contains("latitude"))
             target.setLatitude(point.getLatitude());
 
         save();

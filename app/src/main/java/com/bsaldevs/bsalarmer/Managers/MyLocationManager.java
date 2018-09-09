@@ -93,14 +93,15 @@ public class MyLocationManager {
 
         if (!target.isActive()) {
             target.setAchieved(false);
+
+            Intent closeNotification = new Intent(Constants.ALARM_ACTION);
+
+            closeNotification.putExtra("id", target.getId());
+            closeNotification.putExtra("task", BroadcastActions.CLOSE_NOTIFICATION);
+
+            context.sendBroadcast(closeNotification);
+
             Log.d(TAG, "checkIsTargetReached target is not active");
-            Log.d(TAG, "checkIsTargetReached: close notification");
-
-            Intent notification = new Intent(Constants.NOTIFICATION_ACTION)
-                    .putExtra("point", target);
-            notification.putExtra("task", BroadcastActions.CLOSE_NOTIFICATION);
-
-            context.sendBroadcast(notification);
             return;
         }
 
@@ -113,8 +114,6 @@ public class MyLocationManager {
         Log.d(TAG, "MyLocationManager: checkIsTargetReached: longitude: " + longitude);
         Log.d(Constants.TAG, "MyLocationManager: checkIsTargetReached: Math.abs(latitude - target.getLatitude()) " + Math.abs(latitude - target.getLatitude()) + " ? " + location.getActionRadius());
         Log.d(Constants.TAG, "MyLocationManager: checkIsTargetReached: Math.abs(longitude - target.getLongitude()) " + Math.abs(longitude - target.getLongitude()) + " ? " + location.getActionRadius());
-
-//        if (Math.abs(latitude - target.getLatitude()) < location.getActionRadius() && Math.abs(longitude - target.getLongitude()) < location.getActionRadius()) {
 
         LatLng myLocation = new LatLng(latitude, longitude);
         LatLng targetLocation = new LatLng(target.getLatitude(), target.getLongitude());
@@ -145,26 +144,22 @@ public class MyLocationManager {
     private void sendChangedStateOfPoint(Point point, boolean reached) {
         Log.d(TAG, "sendChangedStateOfPoint");
 
-        Intent notification = new Intent(Constants.NOTIFICATION_ACTION)
-                .putExtra("point", point);
         Intent alarm = new Intent(Constants.ALARM_ACTION);
+        alarm.putExtra("id", point.getId());
 
         if (reached) {
             Log.d(TAG, "sendChangedStateOfPoint: create notification");
-            notification.putExtra("task", BroadcastActions.CREATE_NOTIFICATION);
             alarm.putExtra("task", BroadcastActions.ALARM);
         }
         else {
             Log.d(TAG, "sendChangedStateOfPoint: close notification");
-            notification.putExtra("task", BroadcastActions.CLOSE_NOTIFICATION);
             alarm.putExtra("task", BroadcastActions.STOP_ALARM);
         }
-        context.sendBroadcast(notification);
         context.sendBroadcast(alarm);
     }
 
-    public void changeTarget(Point point, String extras) {
-        pointManager.changePoint(point, extras);
+    public void changeTarget(Point point) {
+        pointManager.changePoint(point);
         checkIsTargetReached(getTargetById(point.getId()));
     }
 }

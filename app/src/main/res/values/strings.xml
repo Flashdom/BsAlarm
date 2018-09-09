@@ -14,4 +14,7 @@
     <string name="switch_off">Отключить</string>
     <string name="wake_up">Просыпайтесь!</string>
     <string name="arrived">Вы достигли места назначения</string>
+    <string name="text_select_add_target_method">Как вы хотите добавить цель?</string>
+    <string name="text_search_mathod">Я знаю адрес</string>
+    <string name="text_tap_method">Я знаю это место на карте</string>
 </resources>

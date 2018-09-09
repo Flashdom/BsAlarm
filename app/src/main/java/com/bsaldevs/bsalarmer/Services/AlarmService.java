@@ -13,8 +13,10 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.bsaldevs.bsalarmer.Activities.SettingsActivity;
+import com.bsaldevs.bsalarmer.AlarmNotificator;
 import com.bsaldevs.bsalarmer.BroadcastActions;
 import com.bsaldevs.bsalarmer.Constants;
+import com.bsaldevs.bsalarmer.Point;
 import com.bsaldevs.bsalarmer.R;
 
 /**
@@ -26,6 +28,7 @@ public class AlarmService extends Service {
     private final String TAG = Constants.TAG;
     private Uri song;
     private MediaPlayer mediaPlayer;
+    private AlarmNotificator notificator;
 
     public static boolean isIsAlarming() {
         return isAlarming;
@@ -40,6 +43,7 @@ public class AlarmService extends Service {
         Log.d(TAG, "AlarmService: onCreate");
         mediaPlayer = new MediaPlayer();
         song = null;
+        notificator = new AlarmNotificator(getApplicationContext());
         initReceiver();
     }
 
@@ -136,11 +140,20 @@ public class AlarmService extends Service {
             int task = intent.getIntExtra("task", -1);
             Log.d(TAG, "AlarmService: onReceive: task code " + task);
             if (task == BroadcastActions.ALARM) {
+                String id = intent.getStringExtra("id");
+                notificator.createNotification(id);
                 alarm();
             } else if (task == BroadcastActions.STOP_ALARM) {
+                notificator.closeAllNotifications();
                 stopAlarming();
             } else if (task == BroadcastActions.SET_SONG) {
                 song = intent.getParcelableExtra("song");
+            } else if (task == BroadcastActions.CLOSE_NOTIFICATION) {
+                String id = intent.getStringExtra("id");
+                notificator.closeNotification(id);
+                if (notificator.isEmpty()) {
+                    stopAlarming();
+                }
             }
         }
 
