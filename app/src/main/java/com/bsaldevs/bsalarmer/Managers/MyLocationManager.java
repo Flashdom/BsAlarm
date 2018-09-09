@@ -37,6 +37,7 @@ public class MyLocationManager {
         pointManager = new PointManager(context);
         this.context = context;
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+
         if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -47,7 +48,6 @@ public class MyLocationManager {
             public void onLocationChanged(Location location) {
                 Log.d(TAG, "onLocationChanged");
                 setLocation(location.getLatitude(), location.getLongitude());
-
             }
 
             @Override
@@ -105,20 +105,12 @@ public class MyLocationManager {
             return;
         }
 
-        double latitude = location.getLatitude();
-        double longitude = location.getLongitude();
-
         boolean reached = false;
 
-        Log.d(TAG, "MyLocationManager: checkIsTargetReached: latitude: " + latitude);
-        Log.d(TAG, "MyLocationManager: checkIsTargetReached: longitude: " + longitude);
-        Log.d(Constants.TAG, "MyLocationManager: checkIsTargetReached: Math.abs(latitude - target.getLatitude()) " + Math.abs(latitude - target.getLatitude()) + " ? " + location.getActionRadius());
-        Log.d(Constants.TAG, "MyLocationManager: checkIsTargetReached: Math.abs(longitude - target.getLongitude()) " + Math.abs(longitude - target.getLongitude()) + " ? " + location.getActionRadius());
-
-        LatLng myLocation = new LatLng(latitude, longitude);
+        LatLng myLocation = new LatLng(location.getLatitude(), location.getLongitude());
         LatLng targetLocation = new LatLng(target.getLatitude(), target.getLongitude());
 
-        if (Utils.CalculateDistanceBetween(myLocation, targetLocation) <= location.getActionRadius()) {
+        if (Utils.CalculateDistanceBetween(myLocation, targetLocation) <= location.getActionRadius() + target.getRadius()) {
             Log.d(Constants.TAG, "MyLocationManager: checkIsTargetReached: point is achieved");
             reached = true;
         } else {
@@ -138,7 +130,6 @@ public class MyLocationManager {
         for (Point target : points) {
             checkIsTargetReached(target);
         }
-
     }
 
     private void sendChangedStateOfPoint(Point point, boolean reached) {

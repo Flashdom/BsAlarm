@@ -43,6 +43,7 @@ public class CacheManager implements Serializable {
         String lng = "";
         String radius = "";
         String name = "";
+        String active = "";
 
         int part = 0;
 
@@ -55,22 +56,25 @@ public class CacheManager implements Serializable {
                 double latd = 0;
                 double lngd = 0;
                 double radiusd = 0;
+                boolean activeb = false;
 
                 try {
                     latd = Double.parseDouble(lat);
                     lngd = Double.parseDouble(lng);
                     radiusd = Double.parseDouble(radius);
+                    activeb = Boolean.parseBoolean(active);
                 } catch (Exception e) {
                     System.err.print(e.getMessage());
                     Toast.makeText(context, "Не удалось загрузить некоторые точки", Toast.LENGTH_SHORT).show();
                 }
 
-                points.add(new Point(latd, lngd, radiusd, name));
+                points.add(new Point(latd, lngd, radiusd, name, activeb));
 
                 lat = "";
                 lng = "";
                 radius = "";
                 name = "";
+                active = "";
                 part = 0;
 
                 continue;
@@ -94,6 +98,9 @@ public class CacheManager implements Serializable {
                 case 3:
                     name += symbol;
                     break;
+                case 4:
+                    active += symbol;
+                    break;
                 default:
                     Log.d(TAG, "switch -> default -> unknown error");
                     break;
@@ -115,6 +122,8 @@ public class CacheManager implements Serializable {
             data += point.getRadius();
             data += ";";
             data += point.getName();
+            data += ";";
+            data += point.isActive();
             data += "\n";
         }
         return data;

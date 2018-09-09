@@ -21,6 +21,15 @@ public class Point implements Serializable {
         this.active = true;
     }
 
+    public Point(double latitude, double longitude, double radius, String name, boolean active) {
+        this.achieved = false;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.radius = radius;
+        this.name = name;
+        this.active = active;
+    }
+
     public boolean isAchieved() {
         return achieved;
     }

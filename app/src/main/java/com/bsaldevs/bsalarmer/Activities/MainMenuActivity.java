@@ -20,13 +20,13 @@ public class MainMenuActivity extends AppCompatActivity {
     private Button b2;
 
     private static final int ERROR_DIALOG_REQUEST = 9001;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
         initGUI();
     }
-
 
     public void initGUI () {
         b1 = findViewById(R.id.button);

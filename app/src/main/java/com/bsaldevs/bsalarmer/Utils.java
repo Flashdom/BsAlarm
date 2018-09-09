@@ -32,6 +32,6 @@ public final class Utils {
         int meterInDec = Integer.valueOf(newFormat.format(meter));
         Log.i("Radius Value", "" + valueResult + "   KM  " + kmInDec
                 + " Meter   " + meterInDec);
-        return Radius * c;
+        return Radius * c * 1000;
     }
 }

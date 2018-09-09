@@ -12,12 +12,12 @@ public class MyLocation {
 
     private double latitude = 0;
     private double longitude = 0;
-    private double actionRadius = 0.05;
+    private double actionRadius = 5;
 
     public MyLocation() {
         latitude = 0;
         longitude = 0;
-        actionRadius = 0.05;
+        actionRadius = 5;
     }
 
     public MyLocation(double latitude, double longitude, double actionRadius) {

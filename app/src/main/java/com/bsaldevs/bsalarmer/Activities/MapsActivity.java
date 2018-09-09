@@ -171,6 +171,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         if (addresses.size() > 0) {
             Address address = addresses.get(0);
+
+            LatLng position = new LatLng(address.getLatitude(), address.getLongitude());
+            String name = address.getAddressLine(0);
+
+            String id = addMarker(position, name);
+            Point point = new Point(position.latitude, position.longitude, 0, name);
+
+            addTarget(point, id);
+
             Log.d(TAG, "getLocate: found location " + address.toString());
         }
     }
