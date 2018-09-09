@@ -34,7 +34,7 @@ public class SettingsActivity extends AppCompatActivity {
                     .putExtra("song", song);
             sendBroadcast(alarm);
         }
-        Intent returning = new Intent(SettingsActivity.this,MainMenuActivity.class);
+        Intent returning = new Intent(SettingsActivity.this, MapsActivity.class);
         startActivity(returning);
     }
     public void initGUI()

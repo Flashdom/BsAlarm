@@ -90,23 +90,34 @@ public class AlarmService extends Service {
 
     private void playSong() {
 
-        if (song == null) {
+        if (song != null) {
             Log.d(TAG, "playSong: song == null");
             song = Uri.parse(String.valueOf(R.raw.sound));
+
+
+            try {
+                Log.d(TAG, "playSong: song selected");
+                mediaPlayer.create(AlarmService.this, song);
+                mediaPlayer.setDataSource(AlarmService.this, song);
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mediaPlayer.prepare();
+                mediaPlayer.start();
+
+                Log.d(TAG, "playSong: started");
+
+            } catch (Exception e) {
+                Log.d(TAG, "playSong: " + e.getMessage());
+            }
         }
-
-        try {
-            Log.d(TAG, "playSong: song selected");
-            mediaPlayer.create(AlarmService.this, song);
-            mediaPlayer.setDataSource(AlarmService.this, song);
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-
-            Log.d(TAG, "playSong: started");
-
-        } catch (Exception e) {
-            Log.d(TAG, "playSong: " + e.getMessage());
+        else {
+            try {
+                mediaPlayer = MediaPlayer.create(AlarmService.this, R.raw.sound_19482);
+                mediaPlayer.start();
+            }
+            catch (Exception e)
+            {
+                Log.d(TAG, "playSong: " + e.getMessage());
+            }
         }
     }
 

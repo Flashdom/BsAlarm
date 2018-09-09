@@ -52,7 +52,6 @@ public class MainMenuActivity extends AppCompatActivity {
             }
         });
         b2 = findViewById(R.id.button2);
-
         b2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
