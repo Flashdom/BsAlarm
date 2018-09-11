@@ -1,5 +1,6 @@
 package com.bsaldevs.bsalarmer;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -34,4 +35,20 @@ public final class Utils {
                 + " Meter   " + meterInDec);
         return Radius * c;
     }
+
+    public static float getDensity(Context context){
+        float scale = context.getResources().getDisplayMetrics().density;
+        return scale;
+    }
+
+    public static int convertDiptoPix(int dip, Context context){
+        float scale = getDensity(context);
+        return (int) (dip * scale + 0.5f);
+    }
+
+    public static int convertPixtoDip(int pixel, Context context){
+        float scale = getDensity(context);
+        return (int)((pixel - 0.5f)/scale);
+    }
+
 }
